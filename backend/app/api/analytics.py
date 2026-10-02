@@ -62,7 +62,9 @@ def get_analytics(
         func.min(case((RequestStatusHistory.to_status == RequestStatus.delivered, RequestStatusHistory.changed_at))).label("delivered_at"),
     ).join(RequestStatusHistory, RequestStatusHistory.request_id == Request.id).filter(
         Request.created_at >= start, Request.created_at < end
-    ).group_by(Request.id).subquery()
+    ).group_by(Request.id).having(
+        func.min(case((RequestStatusHistory.to_status == RequestStatus.delivered, RequestStatusHistory.changed_at))).isnot(None)
+    ).subquery()
     
     # A matching subquery gets the original submitted event for each request.
     submitted_times = db.query(

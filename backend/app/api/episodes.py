@@ -110,18 +110,3 @@ def list_request_episodes(
         raise HTTPException(status_code=403, detail="Not allowed to view this request")
     # The ORM relationship follows Assignment rows to their linked Episode records.
     return [link.episode for link in request.assignments]
-
-@router.get("/requests/{request_id}/assignments", response_model=list[EpisodeResponse])
-def list_request_episodes(
-    request_id: int,
-    db: Annotated[Session, Depends(get_db)],
-    current_user: Annotated[User, Depends(get_current_user)],# Only clients and operators can list request episodes
-):
-    """List a request's episodes for operations staff or its owning client."""
-    request = db.get(Request, request_id)
-    if request is None:
-        raise HTTPException(status_code=404, detail="Request not found")
-    if current_user.role == UserRole.client and request.client_id != current_user.id:
-        raise HTTPException(status_code=403, detail="Not allowed to view this request")
-    # The ORM relationship follows Assignment rows to their linked Episode records.
-    return [link.episode for link in request.assignments]
