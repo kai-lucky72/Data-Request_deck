@@ -25,17 +25,18 @@ class RequestUpdateStatus(BaseModel):
 class RequestResponse(BaseModel):
     """Fields returned to clients and staff after reading or changing a request."""
 
-    id: int  # Database request identifier, used in routes such as /requests/{id}.
-    client_id: int  # Owner's database ID; clients only receive their own records.
-    task_name: str  # What kind of robot task the requested dataset should contain.
-    episodes_requested: int  # Required delivery quantity.
-    deadline: date  # Requested completion date.
-    notes: Optional[str]  # Optional instructions supplied during creation.
-    status: RequestStatus  # Current workflow state, not the full state history.
-    created_at: datetime  # When the request was first saved.
-    updated_at: datetime  # Most recent database update time.
-    
-    # Pydantic reads these output fields from the SQLAlchemy model attributes.
+    id: int
+    client_id: int
+    client_name: Optional[str] = None
+    task_name: str
+    episodes_requested: int
+    assigned_count: int = 0
+    deadline: date
+    notes: Optional[str] = None
+    status: RequestStatus
+    created_at: datetime
+    updated_at: datetime
+
     model_config = ConfigDict(from_attributes=True)
 
 
@@ -43,5 +44,18 @@ class RequestDetailResponse(RequestResponse):
     """Extended response for screens that need to show fulfillment progress."""
 
     assigned_count: int = 0  # Number of linked episodes; default is useful for empty requests.
+
+
+class StatusHistoryResponse(BaseModel):
+    """One row of a request's status history."""
+
+    id: int
+    from_status: Optional[RequestStatus] = None
+    to_status: RequestStatus
+    changed_by_id: Optional[int] = None
+    changed_at: datetime
+    note: Optional[str] = None
+
+    model_config = ConfigDict(from_attributes=True)
 
 

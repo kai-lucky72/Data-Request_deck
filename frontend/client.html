@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Client — Dataset Request Desk</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <nav>
+    <strong>Dataset Request Desk</strong>
+    <a href="/client.html" class="active">My Requests</a>
+    <span class="spacer"></span>
+    <span id="who"></span>
+    <button class="secondary" onclick="API.logout()">Log out</button>
+  </nav>
+
+  <section>
+    <h2>New request</h2>
+    <form id="request-form">
+      <input name="task_name" placeholder="Task name" required style="width:200px">
+      <input name="episodes_requested" type="number" min="1" placeholder="Episodes" required style="width:100px">
+      <input name="deadline" type="date" required>
+      <input name="notes" placeholder="Notes (optional)" style="width:200px">
+      <button type="submit">Create request</button>
+    </form>
+  </section>
+
+  <section>
+    <h2>My requests</h2>
+    <div id="requests"></div>
+  </section>
+
+  <p id="message"></p>
+  <script src="/app.js"></script>
+  <script>
+    API.requireAuth();
+    let currentUser = null;
+
+    async function loadRequests() {
+      const requests = await API.call('/requests');
+      const container = document.querySelector('#requests');
+      if (!requests.length) {
+        container.innerHTML = '<p class="muted">No requests yet.</p>';
+        return;
+      }
+      const table = document.createElement('table');
+      table.innerHTML = '<thead><tr><th>ID</th><th>Task</th><th>Progress</th><th>Deadline</th><th>Status</th><th>Actions</th></tr></thead>';
+      const tbody = document.createElement('tbody');
+      for (const req of requests) {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${req.id}</td>
+          <td>${escapeHtml(req.task_name)}</td>
+          <td>${progressBar(req.assigned_count || 0, req.episodes_requested)}</td>
+          <td>${req.deadline}</td>
+          <td>${statusBadge(req.status)}</td>
+          <td class="row-actions"></td>`;
+        const actions = tr.querySelector('.row-actions');
+        if (req.status === 'delivered') {
+          const accept = document.createElement('button');
+          accept.textContent = 'Accept';
+          accept.onclick = () => changeStatus(req.id, 'accepted');
+          const reject = document.createElement('button');
+          reject.textContent = 'Reject';
+          reject.className = 'danger';
+          reject.onclick = () => changeStatus(req.id, 'rejected');
+          actions.append(accept, reject);
+        }
+        const expand = document.createElement('span');
+        expand.className = 'expand-btn';
+        expand.textContent = 'Details';
+        expand.style.marginLeft = '0.5rem';
+        expand.onclick = () => toggleDetail(req.id, tr);
+        actions.append(expand);
+        tbody.append(tr);
+
+        const detailTr = document.createElement('tr');
+        detailTr.className = 'detail-row';
+        detailTr.id = `detail-${req.id}`;
+        detailTr.innerHTML = `<td colspan="6"><div id="detail-content-${req.id}">Loading…</div></td>`;
+        tbody.append(detailTr);
+      }
+      table.append(tbody);
+      container.replaceChildren(table);
+    }
+
+    async function toggleDetail(id, row) {
+      const detailRow = document.querySelector(`#detail-${id}`);
+      const isOpen = detailRow.classList.toggle('open');
+      if (!isOpen) return;
+      const content = document.querySelector(`#detail-content-${id}`);
+      const req = await API.call(`/requests/${id}`);
+      const episodes = await API.call(`/episodes/requests/${id}/assignments`);
+      const history = await API.call(`/requests/${id}/history`);
+      content.innerHTML = `
+        <h3>Assigned episodes</h3>
+        ${episodes.length ? '<table><thead><tr><th>Episode ID</th><th>Task</th><th>Quality</th><th>Robot</th></tr></thead><tbody>' +
+          episodes.map(ep => `<tr><td>${escapeHtml(ep.episode_id)}</td><td>${escapeHtml(ep.task_name)}</td><td>${ep.quality}</td><td>${escapeHtml(ep.robot_id)}</td></tr>`).join('') +
+        '</tbody></table>' : '<p class="muted">No episodes assigned yet.</p>'}
+        <h3>Status history</h3>
+        <table><thead><tr><th>From</th><th>To</th><th>By</th><th>When</th><th>Note</th></tr></thead><tbody>
+          ${history.map(h => `<tr><td>${h.from_status || '—'}</td><td>${h.to_status}</td><td>${h.changed_by_id}</td><td>${new Date(h.changed_at).toLocaleString()}</td><td>${escapeHtml(h.note || '')}</td></tr>`).join('')}
+        </tbody></table>`;
+    }
+
+    async function changeStatus(id, status) {
+      try {
+        await API.call(`/requests/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) });
+        showMessage(`Request moved to ${status}.`, 'success');
+        await loadRequests();
+      } catch (err) {
+        showMessage(err.message, 'error');
+      }
+    }
+
+    document.querySelector('#request-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const form = e.target;
+      const data = Object.fromEntries(new FormData(form));
+      data.episodes_requested = Number(data.episodes_requested);
+      data.notes = data.notes || null;
+      try {
+        await API.call('/requests', { method: 'POST', body: JSON.stringify(data) });
+        form.reset();
+        showMessage('Request created.', 'success');
+        await loadRequests();
+      } catch (err) {
+        showMessage(err.message, 'error');
+      }
+    });
+
+    API.me().then(user => {
+      currentUser = user;
+      document.querySelector('#who').textContent = `${user.name} (${user.role})`;
+      loadRequests();
+    }).catch(() => API.logout());
+  </script>
+</body>
+</html>

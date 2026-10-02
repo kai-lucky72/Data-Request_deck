@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Episodes — Dataset Request Desk</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <nav>
+    <strong>Dataset Request Desk</strong>
+    <a href="/operator.html">Requests</a>
+    <a href="/operator-episodes.html" class="active">Episodes</a>
+    <a href="/operator-analytics.html">Analytics</a>
+    <span class="spacer"></span>
+    <span id="who"></span>
+    <button class="secondary" onclick="API.logout()">Log out</button>
+  </nav>
+
+  <section>
+    <h2>Import episodes</h2>
+    <input id="csv-file" type="file" accept=".csv">
+    <button id="import-btn">Import CSV</button>
+    <p class="muted">Upload a CSV with columns: episode_id, robot_id, task_name, recorded_at, duration_seconds, operator_name, quality</p>
+  </section>
+
+  <section>
+    <h2>Find episodes</h2>
+    <input id="task-filter" placeholder="Filter task name" style="width:200px">
+    <select id="quality-filter">
+      <option value="">Any quality</option>
+      <option value="good">good</option>
+      <option value="usable">usable</option>
+      <option value="bad">bad</option>
+    </select>
+    <label><input type="checkbox" id="available-only" checked> Available only</label>
+    <button id="search-btn">Search</button>
+  </section>
+
+  <section>
+    <h2>Results</h2>
+    <div id="results"></div>
+  </section>
+
+  <p id="message"></p>
+  <script src="/app.js"></script>
+  <script>
+    API.requireAuth();
+
+    document.querySelector('#import-btn').onclick = async () => {
+      const fileInput = document.querySelector('#csv-file');
+      if (!fileInput.files.length) { showMessage('Choose a CSV file first.', 'error'); return; }
+      const formData = new FormData();
+      formData.append('file', fileInput.files[0]);
+      try {
+        const result = await API.call('/episodes/import', { method: 'POST', body: formData });
+        showMessage(`Imported ${result.imported}, skipped ${result.skipped}.`, 'success');
+        fileInput.value = '';
+        if (result.issues.length) {
+          console.table(result.issues);
+        }
+      } catch (err) {
+        showMessage(err.message, 'error');
+      }
+    };
+
+    document.querySelector('#search-btn').onclick = async () => {
+      const params = new URLSearchParams();
+      const task = document.querySelector('#task-filter').value.trim();
+      const quality = document.querySelector('#quality-filter').value;
+      const availableOnly = document.querySelector('#available-only').checked;
+      if (task) params.set('task_name', task);
+      if (quality) params.set('quality', quality);
+      if (availableOnly) params.set('available_only', 'true');
+      try {
+        const episodes = await API.call(`/episodes?${params}`);
+        const container = document.querySelector('#results');
+        if (!episodes.length) {
+          container.innerHTML = '<p class="muted">No episodes found.</p>';
+          return;
+        }
+        const table = document.createElement('table');
+        table.innerHTML = '<thead><tr><th>Episode ID</th><th>Task</th><th>Quality</th><th>Robot</th><th>Duration</th><th>Recorded</th><th>Status</th></tr></thead>';
+        const tbody = document.createElement('tbody');
+        for (const ep of episodes) {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${escapeHtml(ep.episode_id)}</td>
+            <td>${escapeHtml(ep.task_name)}</td>
+            <td>${ep.quality}</td>
+            <td>${escapeHtml(ep.robot_id)}</td>
+            <td>${ep.duration_seconds}s</td>
+            <td>${new Date(ep.recorded_at).toLocaleDateString()}</td>
+            <td>${ep.assigned ? 'Assigned' : 'Available'}</td>`;
+          tbody.append(tr);
+        }
+        table.append(tbody);
+        container.replaceChildren(table);
+      } catch (err) {
+        showMessage(err.message, 'error');
+      }
+    };
+
+    API.me().then(user => {
+      document.querySelector('#who').textContent = `${user.name} (${user.role})`;
+    }).catch(() => API.logout());
+  </script>
+</body>
+</html>

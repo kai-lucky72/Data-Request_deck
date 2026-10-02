@@ -7,15 +7,15 @@ import time
 from fastapi import FastAPI, Request
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from app.core.config import settings
 from app.api import auth
 from app.api import requests, episodes, analytics, users
 
 logger = logging.getLogger("dataset_desk.requests")
-logging.basicConfig(level=logging.INFO)  # Ensure access records are visible in Docker logs.
+logging.basicConfig(level=logging.INFO)
 
-# setting up the app
 app = FastAPI(
     title=settings.APP_NAME,
     description="A FastAPI application for dataset request management",
@@ -23,26 +23,53 @@ app = FastAPI(
     docs_url="/docs",
 )
 
-# setting up the cors middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],          
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-app.include_router(auth.router) #adding the auth router
-app.include_router(requests.router) #adding the requests router
-app.include_router(episodes.router) #adding the episodes router
-app.include_router(analytics.router) #adding the analytics router
-app.include_router(users.router) #adding the users router
+app.include_router(auth.router)
+app.include_router(requests.router)
+app.include_router(episodes.router)
+app.include_router(analytics.router)
+app.include_router(users.router)
 
-# setting up the home route of the app
+app.mount("/static", StaticFiles(directory="frontend"), name="frontend")
+
 @app.get("/", include_in_schema=False)
 def home():
-    """Serve the no-build frontend from the same origin as the JSON API."""
     return FileResponse("frontend/index.html")
+
+@app.get("/client.html", include_in_schema=False)
+def client_page():
+    return FileResponse("frontend/client.html")
+
+@app.get("/operator.html", include_in_schema=False)
+def operator_page():
+    return FileResponse("frontend/operator.html")
+
+@app.get("/operator-episodes.html", include_in_schema=False)
+def operator_episodes_page():
+    return FileResponse("frontend/operator-episodes.html")
+
+@app.get("/operator-analytics.html", include_in_schema=False)
+def operator_analytics_page():
+    return FileResponse("frontend/operator-analytics.html")
+
+@app.get("/admin.html", include_in_schema=False)
+def admin_page():
+    return FileResponse("frontend/admin.html")
+
+@app.get("/styles.css", include_in_schema=False)
+def styles():
+    return FileResponse("frontend/styles.css")
+
+@app.get("/app.js", include_in_schema=False)
+def app_js():
+    return FileResponse("frontend/app.js")
 
 @app.middleware("http")
 async def log_request(request: Request, call_next):

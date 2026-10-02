@@ -14,6 +14,15 @@ from app.schemas.user import UserCreate, UserResponse, UserRoleUpdate
 router = APIRouter(prefix="/users", tags=["Users"])
 
 
+@router.get("", response_model=list[UserResponse])
+def list_users(
+    db: Annotated[Session, Depends(get_db)],
+    _admin: Annotated[User, Depends(require_roles(UserRole.admin))],
+):
+    """List all accounts; admin only."""
+    return db.query(User).order_by(User.id).all()
+
+
 @router.post("", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 def create_user(
     payload: UserCreate,

@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Admin — Dataset Request Desk</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <nav>
+    <strong>Dataset Request Desk</strong>
+    <a href="/admin.html" class="active">Users</a>
+    <a href="/operator.html">Requests</a>
+    <a href="/operator-episodes.html">Episodes</a>
+    <a href="/operator-analytics.html">Analytics</a>
+    <span class="spacer"></span>
+    <span id="who"></span>
+    <button class="secondary" onclick="API.logout()">Log out</button>
+  </nav>
+
+  <section>
+    <h2>Create user</h2>
+    <form id="create-user-form">
+      <input name="email" type="email" placeholder="Email" required style="width:200px">
+      <input name="password" type="password" placeholder="Password" required style="width:150px">
+      <input name="name" placeholder="Name" required style="width:150px">
+      <select name="role" required>
+        <option value="client">client</option>
+        <option value="operator">operator</option>
+        <option value="admin">admin</option>
+      </select>
+      <input name="organisation" placeholder="Organisation (optional)" style="width:180px">
+      <button type="submit">Create</button>
+    </form>
+  </section>
+
+  <section>
+    <h2>Users</h2>
+    <div id="users"></div>
+  </section>
+
+  <p id="message"></p>
+  <script src="/app.js"></script>
+  <script>
+    API.requireAuth();
+
+    async function loadUsers() {
+      const users = await API.call('/users');
+      const container = document.querySelector('#users');
+      if (!users.length) {
+        container.innerHTML = '<p class="muted">No users.</p>';
+        return;
+      }
+      const table = document.createElement('table');
+      table.innerHTML = '<thead><tr><th>ID</th><th>Email</th><th>Name</th><th>Role</th><th>Active</th><th>Actions</th></tr></thead>';
+      const tbody = document.createElement('tbody');
+      for (const u of users) {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${u.id}</td>
+          <td>${escapeHtml(u.email)}</td>
+          <td>${escapeHtml(u.name)}</td>
+          <td>${u.role}</td>
+          <td>${u.is_active ? 'Yes' : 'No'}</td>
+          <td class="row-actions"></td>`;
+        const actions = tr.querySelector('.row-actions');
+        const roleBtn = document.createElement('button');
+        roleBtn.textContent = 'Change role';
+        roleBtn.className = 'secondary';
+        roleBtn.onclick = () => changeRole(u.id);
+        actions.append(roleBtn);
+        const activeBtn = document.createElement('button');
+        activeBtn.textContent = u.is_active ? 'Deactivate' : 'Activate';
+        activeBtn.className = u.is_active ? 'danger' : '';
+        activeBtn.onclick = () => toggleActive(u.id, u.is_active);
+        actions.append(activeBtn);
+        tbody.append(tr);
+      }
+      table.append(tbody);
+      container.replaceChildren(table);
+    }
+
+    async function changeRole(userId) {
+      const roles = ['client', 'operator', 'admin'];
+      const newRole = prompt(`New role (${roles.join('/')}):`);
+      if (!newRole || !roles.includes(newRole)) { showMessage('Invalid role.', 'error'); return; }
+      try {
+        await API.call(`/users/${userId}/role`, { method: 'PATCH', body: JSON.stringify({ role: newRole }) });
+        showMessage('Role updated.', 'success');
+        await loadUsers();
+      } catch (err) {
+        showMessage(err.message, 'error');
+      }
+    }
+
+    async function toggleActive(userId, currentlyActive) {
+      try {
+        await API.call(`/users/${userId}/active?active=${!currentlyActive}`, { method: 'PATCH' });
+        showMessage(currentlyActive ? 'User deactivated.' : 'User activated.', 'success');
+        await loadUsers();
+      } catch (err) {
+        showMessage(err.message, 'error');
+      }
+    }
+
+    document.querySelector('#create-user-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const form = e.target;
+      const data = Object.fromEntries(new FormData(form));
+      data.organisation = data.organisation || null;
+      try {
+        await API.call('/users', { method: 'POST', body: JSON.stringify(data) });
+        form.reset();
+        showMessage('User created.', 'success');
+        await loadUsers();
+      } catch (err) {
+        showMessage(err.message, 'error');
+      }
+    });
+
+    API.me().then(user => {
+      if (user.role !== 'admin') {
+        showMessage('Admin access required.', 'error');
+        setTimeout(() => API.logout(), 1500);
+        return;
+      }
+      document.querySelector('#who').textContent = `${user.name} (${user.role})`;
+      loadUsers();
+    }).catch(() => API.logout());
+  </script>
+</body>
+</html>

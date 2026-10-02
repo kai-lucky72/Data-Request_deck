@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Analytics — Dataset Request Desk</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <nav>
+    <strong>Dataset Request Desk</strong>
+    <a href="/operator.html">Requests</a>
+    <a href="/operator-episodes.html">Episodes</a>
+    <a href="/operator-analytics.html" class="active">Analytics</a>
+    <span class="spacer"></span>
+    <span id="who"></span>
+    <button class="secondary" onclick="API.logout()">Log out</button>
+  </nav>
+
+  <section>
+    <h2>Analytics</h2>
+    <label>Start date <input type="date" id="start-date" value="2026-01-01"></label>
+    <label>End date <input type="date" id="end-date" value="2026-12-31"></label>
+    <button id="load-btn">Load</button>
+  </section>
+
+  <section id="results"></section>
+  <p id="message"></p>
+  <script src="/app.js"></script>
+  <script>
+    API.requireAuth();
+
+    document.querySelector('#load-btn').onclick = async () => {
+      const start = document.querySelector('#start-date').value;
+      const end = document.querySelector('#end-date').value;
+      try {
+        const data = await API.call(`/analytics?start_date=${start}&end_date=${end}`);
+        const container = document.querySelector('#results');
+        let html = '<h3>Episodes per day per robot</h3>';
+        if (data.episodes_per_day_per_robot.length) {
+          html += '<table><thead><tr><th>Date</th><th>Robot</th><th>Count</th></tr></thead><tbody>' +
+            data.episodes_per_day_per_robot.map(r => `<tr><td>${r.date}</td><td>${escapeHtml(r.robot_id)}</td><td>${r.count}</td></tr>`).join('') +
+            '</tbody></table>';
+        } else {
+          html += '<p class="muted">No episodes in range.</p>';
+        }
+        html += '<h3>Requests by status</h3><table><thead><tr><th>Status</th><th>Count</th></tr></thead><tbody>' +
+          Object.entries(data.requests_by_status).map(([s, c]) => `<tr><td>${statusBadge(s)}</td><td>${c}</td></tr>`).join('') +
+          '</tbody></table>';
+        html += `<h3>Median submitted → delivered</h3><p>${data.median_submitted_to_delivered_seconds != null ? data.median_submitted_to_delivered_seconds.toFixed(1) + ' seconds' : 'No delivered requests in range.'}</p>`;
+        html += '<h3>Top 5 tasks by good episodes</h3><table><thead><tr><th>Task</th><th>Good episodes</th></tr></thead><tbody>' +
+          (data.top_5_good_episode_tasks.length ? data.top_5_good_episode_tasks.map(t => `<tr><td>${escapeHtml(t.task_name)}</td><td>${t.count}</td></tr>`).join('') : '<tr><td colspan="2" class="muted">None</td></tr>') +
+          '</tbody></table>';
+        container.innerHTML = html;
+      } catch (err) {
+        showMessage(err.message, 'error');
+      }
+    };
+
+    API.me().then(user => {
+      document.querySelector('#who').textContent = `${user.name} (${user.role})`;
+    }).catch(() => API.logout());
+  </script>
+</body>
+</html>

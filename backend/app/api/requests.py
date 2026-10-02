@@ -10,13 +10,31 @@ from app.api.deps import get_current_user, require_roles
 from app.db.session import get_db
 from app.models.user import User, UserRole
 from app.models.request import Request, RequestStatus, RequestStatusHistory
-from app.schemas.request import RequestCreate, RequestResponse, RequestUpdateStatus
+from app.models.assignment import Assignment
+from app.schemas.request import RequestCreate, RequestResponse, RequestUpdateStatus, StatusHistoryResponse
 from app.services.status import change_request_status
 
 router = APIRouter(
     prefix="/requests",
     tags=["Requests"]
 )
+
+def _to_response(db: Session, request: Request) -> dict:
+    """Build a RequestResponse dict with assigned_count and client_name."""
+    assigned_count = db.query(Assignment.id).filter(Assignment.request_id == request.id).count()
+    return {
+        "id": request.id,
+        "client_id": request.client_id,
+        "client_name": request.client.name if request.client else None,
+        "task_name": request.task_name,
+        "episodes_requested": request.episodes_requested,
+        "assigned_count": assigned_count,
+        "deadline": request.deadline,
+        "notes": request.notes,
+        "status": request.status,
+        "created_at": request.created_at,
+        "updated_at": request.updated_at,
+    }
 
 @router.post("", response_model=RequestResponse,status_code=status.HTTP_201_CREATED)
 def create_request(
@@ -47,10 +65,9 @@ def create_request(
         changed_at=datetime.now(timezone.utc),
         note="Request created",
     ))
-    db.commit()  # Request and initial history entry succeed or fail together.
+    db.commit()
     db.refresh(request)
-    
-    return request
+    return _to_response(db, request)
 
 @router.get("", response_model=list[RequestResponse])
 def list_requests(
@@ -58,13 +75,11 @@ def list_requests(
     current_user: Annotated[User, Depends(get_current_user)],
 ):
     """Clients see their own records; operations roles see the full work queue."""
-    query = db.query(Request)  # Start with the database query before applying role scope.
-    
+    query = db.query(Request)
     if current_user.role == UserRole.client:
-        # Row-level authorization is enforced in SQL so other clients' data is never returned.
         query = query.filter(Request.client_id == current_user.id)
-    # Newest requests appear first in the queue.
-    return query.order_by(Request.created_at.desc()).all()
+    requests = query.order_by(Request.created_at.desc()).all()
+    return [_to_response(db, r) for r in requests]
     
 @router.get("/{request_id}", response_model=RequestResponse)
 def get_request(
@@ -81,7 +96,24 @@ def get_request(
     if current_user.role == UserRole.client and request.client_id != current_user.id:
         raise HTTPException(status_code=403, detail="Not allowed to view this request")
 
-    return request
+    return _to_response(db, request)
+
+
+@router.get("/{request_id}/history", response_model=list[StatusHistoryResponse])
+def get_request_history(
+    request_id: int,
+    db: Annotated[Session, Depends(get_db)],
+    current_user: Annotated[User, Depends(get_current_user)],
+):
+    """Return the full status history for a request, enforcing client ownership."""
+    request = db.get(Request, request_id)
+    if not request:
+        raise HTTPException(status_code=404, detail="Request not found")
+    if current_user.role == UserRole.client and request.client_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not allowed to view this request")
+    return db.query(RequestStatusHistory).filter(
+        RequestStatusHistory.request_id == request_id
+    ).order_by(RequestStatusHistory.changed_at).all()
 
 
 @router.patch("/{request_id}/status", response_model=RequestResponse)
@@ -96,10 +128,11 @@ def update_request_status(
     if not request:
         raise HTTPException(status_code=404, detail="Request not found")
 
-    return change_request_status(
+    updated = change_request_status(
         db=db,
         request=request,
         new_status=payload.status,
         user=current_user,
         note=payload.note,
     )
+    return _to_response(db, updated)
