@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
 from app.api import auth
+from app.api import requests
 
 # setting up the app
 app = FastAPI(
@@ -21,7 +22,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(auth.router)
+app.include_router(auth.router) #adding the auth router
+app.include_router(requests.router) #adding the requests router
 
 # setting up the home route of the app
 @app.get("/")
