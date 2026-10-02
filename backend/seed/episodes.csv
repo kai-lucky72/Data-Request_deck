@@ -1,0 +1,192 @@
+episode_id,robot_id,task_name,recorded_at,duration_seconds,operator_name,quality
+EP-00156,mobile-01,stack blocks,2026-08-16T23:28:00,78,Diane,good
+EP-00011,arm-03,pour water,2026-09-10T15:08:00,32,Kevin,bad
+EP-00122,arm-01,open drawer,2026-08-23T00:59:00,46,Patrick,usable
+EP-00121,humanoid-01,stack blocks,2026-08-19T01:24:00,10,Jeanne,usable
+EP-00138,arm-02,pick cup,2026-09-13T04:20:00,83,Kevin,good
+EP-00155,humanoid-01,open drawer,2026-08-31T13:13:00,68,Jeanne,usable
+EP-00091,arm-03,stack blocks,2026-08-21T02:39:00,108,Diane,usable
+EP-00003,humanoid-01,fold towel,2026-08-05T06:57:00,12,Aline,good
+EP-00072,arm-03,place cup on shelf,2026-08-10T22:03:00,95,Kevin,good
+EP-00047,mobile-01,wipe table,2026-08-20T01:01:00,101,Aline,good
+EP-00075,arm-02,stack blocks,2026-08-16T12:19:00,41,Eric,usable
+EP-00090,humanoid-01,open drawer,2026-08-09T11:02:00,12,Aline,bad
+EP-00133,arm-01,pour water,2026-09-08T12:39:00,27,Eric,good
+EP-00107,humanoid-01,place cup on shelf,2026-08-20T04:40:00,99,Kevin,usable
+EP-00038,arm-03,fold towel,2026-09-02T18:43:00,93,Kevin,good
+EP-00026,arm-03,pour water,2026-08-25T09:56:00,118,Aline,good
+EP-00147,mobile-01,place cup on shelf,2026-08-14T00:39:00,104,Patrick,bad
+EP-00154,arm-02,fold towel,2026-08-14T17:23:00,96,Eric,good
+EP-00043,arm-02,open drawer,2026-08-24T17:35:00,93,Patrick,good
+EP-00005,humanoid-01,fold towel,2026-08-10T09:11:00,36,Patrick,bad
+EP-00086,mobile-01,open drawer,2026-09-07T11:55:00,47,Eric,good
+EP-00033,arm-01,open drawer,2026-08-02T05:16:00,120,Diane,good
+EP-00040,arm-03,pick cup,2026-08-04T05:56:00,83,Jeanne,good
+EP-00055,mobile-01,stack blocks,2026-08-14T07:34:00,101,Jeanne,usable
+EP-00143,arm-03,stack blocks,2026-09-14T01:26:00,114,Patrick,good
+EP-00166,arm-03,place cup on shelf,2026-08-21T09:06:00,14,Diane,usable
+EP-00139,arm-03,wipe table,2026-08-05T23:18:00,95,Jeanne,good
+EP-00014,arm-03,open drawer,14/08/2026 09:15,34,Kevin,good
+EP-00045,arm-02,wipe table,2026-08-22T20:16:00,68,Patrick,good
+EP-00028,arm-03,fold towel,2026-08-06T09:50:00,28,Patrick,good
+EP-00008, arm-01,pick cup,2026-08-05T13:18:00,53,Diane,bad
+EP-00173,arm-02,stack blocks,2026-09-13T11:01:00,35,Diane,good
+EP-00077,arm-02,pour water,2026-09-13T08:14:00,12,Diane,bad
+EP-00013,arm-01,fold towel,2026-08-14 09:12:00,43,Patrick,good
+EP-00087,arm-02,fold towel,2026-08-02T09:50:00,50,Diane,good
+EP-00030,arm-01,wipe table,2026-09-11T20:49:00,88,Diane,usable
+EP-00074,mobile-01,wipe table,2026-08-30T04:48:00,43,Aline,good
+EP-00106,mobile-01,pour water,2026-09-15T02:43:00,116,Aline,usable
+EP-00035,arm-01,wipe table,2026-09-07T11:18:00,76,Eric,good
+EP-00057,humanoid-01,pick cup,2026-09-03T19:37:00,103,Diane,good
+EP-00128,mobile-01,place cup on shelf,2026-09-09T18:49:00,14,Diane,usable
+EP-00094,humanoid-01,stack blocks,2026-09-12T10:58:00,100,Kevin,good
+EP-00132,arm-01,wipe table,2026-09-05T21:18:00,11,Eric,good
+EP-00080,arm-01,open drawer,2026-08-31T16:28:00,107,Jeanne,usable
+EP-00130,mobile-01,open drawer,2026-08-13T23:55:00,114,Aline,usable
+EP-00114,arm-02,stack blocks,2026-09-11T03:59:00,118,Patrick,usable
+EP-00042,arm-01,pick cup,2026-08-11T18:03:00,118,Diane,good
+EP-00048,mobile-01,stack blocks,2026-08-04T02:12:00,51,Aline,good
+EP-00074,mobile-01,wipe table,2026-08-30T04:48:00,43,Aline,good
+EP-00089,humanoid-01,open drawer,2026-09-01T06:12:00,11,Aline,good
+EP-00108,mobile-01,place cup on shelf,2026-08-23T19:59:00,26,Kevin,good
+EP-00067,arm-03,place cup on shelf,2026-08-24T08:33:00,52,Aline,good
+EP-00117,arm-03,open drawer,2026-08-12T00:07:00,48,Jeanne,good
+EP-00082,arm-02,fold towel,2026-09-14T18:16:00,11,Eric,good
+EP-00093,arm-01,stack blocks,2026-08-12T22:13:00,63,Aline,usable
+EP-00032,humanoid-01,pick cup,2026-09-13T17:28:00,84,Diane,usable
+EP-00116,arm-02,open drawer,2026-08-23T09:18:00,64,Aline,good
+,humanoid-01,fold towel,2026-08-13T06:59:00,82,Patrick,good
+EP-00100,arm-01,open drawer,2026-08-26T06:29:00,44,Eric,usable
+EP-00054,mobile-01,pick cup,2026-08-08T19:49:00,57,Diane,usable
+EP-00050,arm-03,fold towel,2026-08-09T16:25:00,39,Aline,usable
+EP-00120,mobile-01,fold towel,2026-08-26T00:40:00,15,Eric,usable
+EP-00126,humanoid-01,pour water,2026-09-14T23:12:00,11,Patrick,bad
+EP-00009,arm-01,stack blocks,2026-08-13T08:55:00,66,Jeanne,Good
+EP-00018,arm-01,wipe table,2026-08-11T18:10:00,45.5,Patrick,good
+EP-00129,arm-02,fold towel,2026-08-16T05:33:00,49,Diane,usable
+EP-00049,arm-02,pour water,2026-08-10T01:16:00,65,Eric,usable
+EP-00019,arm-02,pour water,2026-08-04T08:17:00,120,Kevin,
+EP-00158,arm-02,open drawer,2026-08-06T19:47:00,23,Kevin,usable
+EP-00177,mobile-01,pick cup,2026-09-02T07:50:00,95,Eric,good
+EP-00060,arm-01,stack blocks,2026-08-28T09:56:00,118,Eric,usable
+EP-00061,humanoid-01,place cup on shelf,2026-08-06T18:56:00,82,Jeanne,good
+EP-00053,mobile-01,fold towel,2026-08-19T19:54:00,35,Patrick,good
+EP-00099,arm-02,pour water,2026-09-01T03:48:00,80,Diane,usable
+EP-00142,mobile-01,wipe table,2026-08-01T21:49:00,70,Aline,usable
+EP-00037,humanoid-01,fold towel,2026-09-10T00:55:00,35,Jeanne,good
+EP-00105,arm-02,place cup on shelf,2026-08-11T13:22:00,11,Aline,good
+EP-00020,mobile-01,fold towel,2026-08-11T00:14:00,90,Patrick,excellent
+EP-00092,humanoid-01,pick cup,2026-08-28T22:08:00,57,Jeanne,good
+EP-00113,humanoid-01,fold towel,2026-09-07T10:12:00,114,Jeanne,usable
+EP-00180,arm-02,pick cup,2026-09-07T22:54:00,15,Eric,good
+EP-00029,arm-03,pour water,2026-09-13T17:49:00,105,Eric,usable
+EP-00012,arm-02,wipe table,2026-08-03T10:03:00,45,Aline,good
+EP-00148,mobile-01,open drawer,2026-08-29T02:38:00,11,Patrick,good
+EP-00085,arm-01,wipe table,2026-09-10T00:38:00,68,Eric,good
+EP-00002,arm-02,stack blocks,2026-08-11T11:48:00,21,Kevin,usable
+EP-00098,arm-02,place cup on shelf,2026-08-26T13:33:00,61,Kevin,usable
+EP-00039,humanoid-01,fold towel,2026-08-21T06:31:00,23,Eric,good
+EP-00167,arm-01,fold towel,2026-08-06T12:36:00,70,Aline,bad
+EP-00030,arm-01,wipe table,2026-09-11T20:49:00,88,Diane,usable
+EP-00174,arm-02,place cup on shelf,2026-08-08T11:32:00,78,Aline,good
+EP-00176,arm-01,place cup on shelf,2026-08-14T14:07:00,44,Kevin,good
+EP-00004,arm-02,pour water,2026-08-11T06:48:00,85,Aline,usable
+EP-00016,arm-02,place cup on shelf,2026-09-03T12:24:00,,Patrick,good
+EP-00062,arm-01,fold towel,2026-08-29T12:31:00,92,Jeanne,bad
+EP-00141,arm-03,pick cup,2026-08-20T19:54:00,72,Kevin,good
+EP-00140,humanoid-01,wipe table,2026-09-06T13:41:00,13,Diane,usable
+EP-00036,mobile-01,pour water,2026-08-31T08:37:00,29,Diane,usable
+EP-00017,humanoid-01,place cup on shelf,2026-09-12T10:46:00,-5,Diane,good
+EP-00070,arm-01,place cup on shelf,2026-09-12T17:43:00,41,Aline,good
+EP-00034,arm-02,pour water,2026-08-03T23:16:00,18,Aline,usable
+EP-00170,humanoid-01,place cup on shelf,2026-08-28T11:07:00,107,Jeanne,usable
+EP-00168,arm-01,place cup on shelf,2026-08-29T23:31:00,27,Jeanne,good
+EP-00096,arm-01,stack blocks,2026-08-15T14:52:00,46,Jeanne,good
+EP-00056,arm-02,open drawer,2026-08-08T09:04:00,35,Aline,bad
+EP-00171,mobile-01,open drawer,2026-08-21T20:04:00,118,Jeanne,usable
+EP-00063,arm-03,open drawer,2026-08-25T03:01:00,34,Kevin,good
+EP-00095,mobile-01,pick cup,2026-08-17T21:49:00,93,Diane,bad
+EP-00078,arm-02,fold towel,2026-08-26T11:30:00,24,Aline,good
+EP-00162,arm-02,open drawer,2026-08-17T18:10:00,9,Kevin,usable
+EP-00066,humanoid-01,pick cup,2026-08-29T14:28:00,17,Jeanne,good
+EP-00025,arm-01,fold towel,2031-01-01T00:00:00,56,Jeanne,usable
+EP-00160,humanoid-01,wipe table,2026-08-13T22:00:00,75,Jeanne,good
+EP-00052,arm-01,pick cup,2026-09-08T09:09:00,104,Eric,good
+EP-00059,humanoid-01,pick cup,2026-08-03T22:07:00,116,Eric,good
+EP-00172,humanoid-01,pour water,2026-08-15T05:33:00,15,Jeanne,good
+EP-00145,humanoid-01,wipe table,2026-08-29T08:44:00,69,Patrick,usable
+EP-00135,arm-03,place cup on shelf,2026-09-05T05:39:00,85,Jeanne,good
+EP-00001,arm-01,pick cup,2026-08-30T10:25:00,102,Diane,good
+EP-00134,arm-01,pour water,2026-08-22T21:15:00,35,Patrick,good
+EP-00065,arm-03,wipe table,2026-08-22T03:24:00,17,Aline,usable
+EP-00164,arm-02,stack blocks,2026-09-02T01:45:00,119,Patrick,good
+EP-00051,humanoid-01,pick cup,2026-09-07T02:34:00,14,Kevin,usable
+EP-00097,mobile-01,open drawer,2026-08-31T16:25:00,59,Kevin,good
+EP-00123,humanoid-01,wipe table,2026-08-25T19:52:00,85,Eric,usable
+EP-00015,arm-01,pour water,2026-08-14T09:20:00Z,89,Eric,usable
+EP-00136,arm-02,open drawer,2026-09-05T17:33:00,21,Jeanne,good
+EP-00161,arm-01,wipe table,2026-09-14T22:58:00,32,Diane,good
+EP-00079,arm-01,open drawer,2026-08-17T22:17:00,34,Kevin,good
+EP-00023,arm-02,pour water,not a date,71,Aline,good
+EP-00115,arm-02,wipe table,2026-08-13T03:06:00,89,Diane,usable
+EP-00010,mobile-01,pick cup,2026-09-14T14:54:00,78,Diane,USABLE
+EP-00101,humanoid-01,pour water,2026-09-06T02:15:00,91,Diane,usable
+EP-00179,humanoid-01,place cup on shelf,2026-08-06T13:21:00,90,Eric,good
+EP-00169,arm-02,pick cup,2026-08-05T05:02:00,79,Patrick,bad
+EP-00104,humanoid-01,open drawer,2026-08-31T13:06:00,19,Eric,good
+EP-00083,mobile-01,wipe table,2026-09-05T22:34:00,93,Kevin,good
+EP-00041,arm-02,pick cup,2026-08-28T02:44:00,17,Kevin,good
+EP-00027,humanoid-01,wipe table,2026-09-01T08:36:00,42,Kevin,good
+EP-00163,arm-03,pick cup,2026-08-07T02:15:00,14,Jeanne,good
+EP-00084,arm-02,wipe table,2026-08-13T11:25:00,97,Aline,usable
+EP-00103,arm-02,stack blocks,2026-09-06T10:58:00,18,Diane,usable
+EP-00088,arm-03,open drawer,2026-09-14T08:06:00,90,Jeanne,usable
+EP-00150,humanoid-01,stack blocks,2026-08-14T01:27:00,120,Diane,usable
+EP-00159,arm-02,place cup on shelf,2026-09-13T14:36:00,35,Kevin,usable
+EP-00124,arm-03,fold towel,2026-08-11T07:40:00,70,Aline,usable
+EP-00110,humanoid-01,fold towel,2026-09-06T22:18:00,14,Jeanne,good
+EP-00046,arm-01,stack blocks,2026-08-05T15:01:00,63,Diane,usable
+EP-00071,humanoid-01,place cup on shelf,2026-09-04T02:55:00,42,Diane,bad
+EP-00112,humanoid-01,pour water,2026-09-15T07:02:00,48,Patrick,bad
+EP-00131,humanoid-01,pick cup,2026-08-02T05:10:00,52,Eric,good
+EP-00119,arm-02,pick cup,2026-09-02T11:35:00,61,Patrick,good
+EP-00044,arm-02,stack blocks,2026-08-25T20:59:00,120,Jeanne,bad
+EP-00165,arm-01,pour water,2026-09-10T01:14:00,44,Patrick,usable
+EP-00157,mobile-01,open drawer,2026-09-02T07:42:00,47,Diane,good
+EP-00068,arm-03,place cup on shelf,2026-08-18T03:37:00,64,Jeanne,good
+EP-00006,arm-01,  Pick Cup ,2026-08-13T23:51:00,111,Eric,usable
+EP-00149,mobile-01,place cup on shelf,2026-08-09T14:37:00,53,Diane,good
+EP-00146,humanoid-01,open drawer,2026-09-07T21:55:00,49,Eric,good
+EP-00058,humanoid-01,fold towel,2026-08-03T14:46:00,72,Jeanne,good
+EP-00024,arm-99,place cup on shelf,2026-09-09T12:33:00,88,Eric,usable
+EP-00007,arm-03,PICK CUP,2026-08-16T19:38:00,35,Diane,good
+EP-00064,arm-03,fold towel,2026-08-12T04:42:00,24,Kevin,good
+EP-00153,mobile-01,fold towel,2026-08-30T17:29:00,109,Aline,good
+EP-00081,humanoid-01,stack blocks,2026-09-14T15:41:00,27,Eric,good
+EP-00109,arm-01,wipe table,2026-09-10T23:01:00,62,Eric,good
+EP-00011,arm-03,pour water,2026-09-10T15:08:00,32,Kevin,good
+EP-00152,humanoid-01,wipe table,2026-08-23T13:39:00,38,Kevin,usable
+EP-00021,,place cup on shelf,2026-08-13T09:19:00,103,Jeanne,usable
+EP-00178,humanoid-01,stack blocks,2026-09-06T04:31:00,110,Eric,usable
+EP-00125,mobile-01,stack blocks,2026-08-16T15:08:00,29,Patrick,good
+EP-00137,arm-03,pour water,2026-09-12T14:35:00,94,Patrick,usable
+EP-00127,arm-01,pick cup,2026-08-27T00:27:00,90,Patrick,good
+EP-00069,humanoid-01,pick cup,2026-08-29T04:06:00,93,Jeanne,good
+EP-00102,mobile-01,stack blocks,2026-08-21T10:32:00,35,Jeanne,usable
+EP-00076,mobile-01,pour water,2026-08-26T10:34:00,9,Aline,good
+EP-00175,mobile-01,fold towel,2026-08-01T10:55:00,96,Jeanne,usable
+EP-00118,arm-02,place cup on shelf,2026-08-07T15:08:00,57,Kevin,good
+EP-00031,arm-02,place cup on shelf,2026-08-29T01:09:00,55,Eric,usable
+EP-00111,arm-01,fold towel,2026-09-12T02:07:00,25,Patrick,usable
+EP-00073,mobile-01,open drawer,2026-08-24T08:02:00,116,Aline,good
+EP-00144,arm-02,stack blocks,2026-08-21T03:40:00,74,Kevin,good
+EP-00151,humanoid-01,place cup on shelf,2026-08-01T19:05:00,18,Eric,usable
+EP-90001,arm-02,open drawer,2026-08-20T10:00:00,30
+EP-90002,arm-03,"pick cup, then place",2026-08-21T11:00:00,40,Eric,good
+EP-90003,arm-01,fold towel,2026-08-22T09:00:00,N/A,Aline,good
+EP-90004,arm-01,fold towel,2026-08-22T09:05:00,999999,Aline,good
+ep-00003,arm-02,wipe table,2026-08-22T09:10:00,33,Eric,good
+EP-90005,mobile-01,pour water,2026-08-22T09:15:00,30,,usable
+
+   
