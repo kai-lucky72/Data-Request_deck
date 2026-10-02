@@ -1,21 +1,20 @@
+FROM node:24-alpine AS frontend-build
+
+WORKDIR /ui
+COPY frontend/package.json frontend/package-lock.json ./
+RUN npm ci
+COPY frontend/ ./
+RUN npm run build
+
 FROM python:3.12-slim
 
 WORKDIR /app
-
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    libpq-dev gcc \
-    && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY backend .
-
-# Root frontend is served by app.main at frontend/index.html;
-# backend/frontend is empty in the repo, so copy the real UI for production
-# images (dev compose mounts ./frontend over this path anyway).
-COPY frontend ./frontend
+COPY --from=frontend-build /ui/dist ./frontend/dist
 
 EXPOSE 8000
 

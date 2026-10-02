@@ -39,3 +39,20 @@ def test_bad_quality_episode_cannot_be_assigned(db):
     with pytest.raises(HTTPException) as error:
         assign_episode_to_request(db, request, episode, operator)
     assert error.value.status_code == 400
+
+
+def test_usable_episode_can_be_assigned_once(db):
+    """A usable recording is accepted, but a second assignment gets a clear conflict."""
+    _client, operator, request = make_users_and_request(db)
+    episode = Episode(episode_id="EP-USE", robot_id="ARM-1", task_name="pick cup",
+                      recorded_at=datetime(2026, 9, 1, tzinfo=timezone.utc), duration_seconds=20,
+                      quality=Quality.usable)
+    db.add(episode)
+    db.commit()
+
+    first = assign_episode_to_request(db, request, episode, operator)
+    assert first.request_id == request.id
+
+    with pytest.raises(HTTPException) as error:
+        assign_episode_to_request(db, request, episode, operator)
+    assert error.value.status_code == 409

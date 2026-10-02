@@ -25,3 +25,41 @@ def test_only_request_owner_can_accept_delivery(db):
     with pytest.raises(HTTPException) as error:
         change_request_status(db, request, RequestStatus.accepted, other)
     assert error.value.status_code == 403
+
+
+def test_only_operator_can_start_request(db):
+    """Clients cannot perform the operations-owned submitted transition."""
+    client, operator, request = make_users_and_request(db, RequestStatus.submitted)
+    with pytest.raises(HTTPException) as error:
+        change_request_status(db, request, RequestStatus.in_progress, client)
+    assert error.value.status_code == 403
+
+    changed = change_request_status(db, request, RequestStatus.in_progress, operator)
+    assert changed.status == RequestStatus.in_progress
+
+
+def test_operator_cannot_accept_client_delivery(db):
+    """Only the client role may accept a delivered request."""
+    _client, operator, request = make_users_and_request(db, RequestStatus.delivered)
+    with pytest.raises(HTTPException) as error:
+        change_request_status(db, request, RequestStatus.accepted, operator)
+    assert error.value.status_code == 403
+
+
+def test_request_owner_can_accept_and_status_change_is_audited(db):
+    """The owning client can accept delivery and the change records its actor."""
+    client, _operator, request = make_users_and_request(db, RequestStatus.delivered)
+    changed = change_request_status(db, request, RequestStatus.accepted, client)
+    history = request.status_history[-1]
+    assert changed.status == RequestStatus.accepted
+    assert history.from_status == RequestStatus.delivered
+    assert history.to_status == RequestStatus.accepted
+    assert history.changed_by_id == client.id
+
+
+def test_invalid_status_transition_is_rejected(db):
+    """Accepted requests are terminal and cannot be moved back to work."""
+    _client, operator, request = make_users_and_request(db, RequestStatus.accepted)
+    with pytest.raises(HTTPException) as error:
+        change_request_status(db, request, RequestStatus.in_progress, operator)
+    assert error.value.status_code == 400

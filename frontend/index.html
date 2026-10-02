@@ -1,60 +1,14 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Dataset Request Desk — Sign in</title>
-  <link rel="stylesheet" href="/styles.css?v=3">
-</head>
-<body>
-  <main class="login-shell">
-    <div class="login-intro">
-      <p class="eyebrow">DATA OPERATIONS PORTAL</p>
-      <h1>Dataset Request Desk</h1>
-      <p>One place for client requests, episode fulfillment, and team administration.</p>
-    </div>
-  <section class="login-card">
-    <h2>Sign in</h2>
-    <form id="login-form">
-      <input name="username" type="email" placeholder="Email" required style="width:100%">
-      <input name="password" type="password" placeholder="Password" required style="width:100%">
-      <button type="submit" style="width:100%">Login</button>
-    </form>
-  </section>
-  <p id="message"></p>
-  </main>
-  <script src="/app.js?v=4"></script>
-  <script>
-    if (API.token) {
-      API.me().then(user => {
-        window.location.href = user.role === 'client' ? '/client.html' : user.role === 'admin' ? '/admin.html' : '/operator.html';
-      }).catch(() => {});
-    }
-
-    document.querySelector('#login-form').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const form = e.target;
-      const body = new URLSearchParams(new FormData(form));
-      try {
-        const res = await fetch('/auth/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body
-        });
-        if (!res.ok) {
-          const data = await res.json();
-          showMessage(data.detail || 'Login failed', 'error');
-          return;
-        }
-        const data = await res.json();
-        API.token = data.access_token;
-        sessionStorage.setItem('token', data.access_token);
-        const user = await API.me();
-        window.location.href = user.role === 'client' ? '/client.html' : user.role === 'admin' ? '/admin.html' : '/operator.html';
-      } catch (err) {
-        showMessage(err.message, 'error');
-      }
-    });
-  </script>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#f5f7fb" />
+    <meta name="description" content="Dataset Request Desk" />
+    <title>Dataset Request Desk</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
 </html>

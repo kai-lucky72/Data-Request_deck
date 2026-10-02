@@ -1,6 +1,12 @@
 """Shared fixtures for all tests."""
 
 from datetime import date
+import os
+
+# Unit tests use isolated SQLite sessions and must run from a clean clone without
+# requiring the developer's local .env file just to import the application.
+os.environ.setdefault("DATABASE_URL", "sqlite:///./test-suite.db")
+os.environ.setdefault("SECRET_KEY", "test-only-secret-key")
 
 import pytest
 from sqlalchemy import create_engine

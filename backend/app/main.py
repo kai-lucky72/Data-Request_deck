@@ -3,6 +3,7 @@
 import logging
 import json
 import time
+from pathlib import Path
 
 from fastapi import FastAPI, Request
 from fastapi.responses import FileResponse
@@ -37,53 +38,32 @@ app.include_router(episodes.router)
 app.include_router(analytics.router)
 app.include_router(users.router)
 
-app.mount("/static", StaticFiles(directory="frontend"), name="frontend")
+# Serve Vite's production build. Keep the lookup usable from both the Docker
+# working directory (/app) and a local repository checkout.
+_repo_root = Path(__file__).resolve().parents[2]
+_dist_candidates = (Path.cwd() / "frontend" / "dist", _repo_root / "frontend" / "dist")
+FRONTEND_DIST = next((path for path in _dist_candidates if path.is_dir()), _dist_candidates[0])
+if (FRONTEND_DIST / "assets").is_dir():
+    app.mount("/assets", StaticFiles(directory=FRONTEND_DIST / "assets"), name="assets")
+
 
 @app.get("/", include_in_schema=False)
-def home():
-    return FileResponse("frontend/index.html")
-
-@app.get("/client.html", include_in_schema=False)
-def client_page():
-    return FileResponse("frontend/client.html")
-
-@app.get("/operator.html", include_in_schema=False)
-def operator_page():
-    return FileResponse("frontend/operator.html")
-
-@app.get("/operator-episodes.html", include_in_schema=False)
-def operator_episodes_page():
-    return FileResponse("frontend/operator-episodes.html")
-
-@app.get("/operator-analytics.html", include_in_schema=False)
-def operator_analytics_page():
-    return FileResponse("frontend/operator-analytics.html")
-
-@app.get("/admin.html", include_in_schema=False)
-def admin_page():
-    return FileResponse("frontend/admin.html")
-
-# Admins have their own workspace URLs. The screens share implementation with
-# operations, while frontend role guards keep operators out of the admin routes.
-@app.get("/admin/requests.html", include_in_schema=False)
-def admin_requests_page():
-    return FileResponse("frontend/operator.html")
-
-@app.get("/admin/episodes.html", include_in_schema=False)
-def admin_episodes_page():
-    return FileResponse("frontend/operator-episodes.html")
-
-@app.get("/admin/analytics.html", include_in_schema=False)
-def admin_analytics_page():
-    return FileResponse("frontend/operator-analytics.html")
-
-@app.get("/styles.css", include_in_schema=False)
-def styles():
-    return FileResponse("frontend/styles.css")
-
-@app.get("/app.js", include_in_schema=False)
-def app_js():
-    return FileResponse("frontend/app.js")
+@app.get("/login", include_in_schema=False)
+@app.get("/client", include_in_schema=False)
+@app.get("/operator/requests", include_in_schema=False)
+@app.get("/operator/episodes", include_in_schema=False)
+@app.get("/operator/analytics", include_in_schema=False)
+@app.get("/admin/users", include_in_schema=False)
+@app.get("/admin/requests", include_in_schema=False)
+@app.get("/admin/episodes", include_in_schema=False)
+@app.get("/admin/analytics", include_in_schema=False)
+def frontend_app():
+    """Return the React entry point for known client and staff routes."""
+    index = FRONTEND_DIST / "index.html"
+    if not index.is_file():
+        from fastapi import HTTPException
+        raise HTTPException(status_code=503, detail="Frontend build is missing")
+    return FileResponse(index)
 
 @app.middleware("http")
 async def log_request(request: Request, call_next):
