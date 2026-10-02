@@ -31,3 +31,7 @@ class User(Base):
         default=lambda: datetime.now(timezone.utc),
         nullable=False
     )
+
+    # - `requests`: one User (the client) can have many Request rows. back_populates="client"
+    #   matches Request.client, so user.requests and request.client stay in sync.
+    requests = relationship("Request", back_populates="client")

@@ -38,3 +38,8 @@ class Episode(Base):
         default=lambda: datetime.now(timezone.utc) #Automatically set the value to the current UTC time when a new row is created.
         nullable=False
     )
+    
+     # This allows each Episode object to access its related Assignment via the `.assignment` attribute.
+    # The `Assignment` model has a corresponding `episode` relationship with `back_populates="assignment"` to form a bidirectional one-to-one link.
+    # Because the Assignment table has a unique constraint on the `episode_id`, each Episode can have at most one Assignment, making this a strict one-to-one mapping.
+    assignment = relationship("Assignment", back_populates="episode", uselist=False) 
