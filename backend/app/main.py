@@ -63,6 +63,20 @@ def operator_analytics_page():
 def admin_page():
     return FileResponse("frontend/admin.html")
 
+# Admins have their own workspace URLs. The screens share implementation with
+# operations, while frontend role guards keep operators out of the admin routes.
+@app.get("/admin/requests.html", include_in_schema=False)
+def admin_requests_page():
+    return FileResponse("frontend/operator.html")
+
+@app.get("/admin/episodes.html", include_in_schema=False)
+def admin_episodes_page():
+    return FileResponse("frontend/operator-episodes.html")
+
+@app.get("/admin/analytics.html", include_in_schema=False)
+def admin_analytics_page():
+    return FileResponse("frontend/operator-analytics.html")
+
 @app.get("/styles.css", include_in_schema=False)
 def styles():
     return FileResponse("frontend/styles.css")

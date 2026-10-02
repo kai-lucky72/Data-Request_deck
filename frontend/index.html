@@ -4,12 +4,16 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Dataset Request Desk — Sign in</title>
-  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/styles.css?v=3">
 </head>
 <body>
-  <h1>Dataset Request Desk</h1>
-  <p class="muted">Sign in to manage dataset requests.</p>
-  <section style="max-width:400px">
+  <main class="login-shell">
+    <div class="login-intro">
+      <p class="eyebrow">DATA OPERATIONS PORTAL</p>
+      <h1>Dataset Request Desk</h1>
+      <p>One place for client requests, episode fulfillment, and team administration.</p>
+    </div>
+  <section class="login-card">
     <h2>Sign in</h2>
     <form id="login-form">
       <input name="username" type="email" placeholder="Email" required style="width:100%">
@@ -18,7 +22,8 @@
     </form>
   </section>
   <p id="message"></p>
-  <script src="/app.js"></script>
+  </main>
+  <script src="/app.js?v=4"></script>
   <script>
     if (API.token) {
       API.me().then(user => {

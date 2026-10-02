@@ -4,9 +4,9 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Client — Dataset Request Desk</title>
-  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/styles.css?v=3">
 </head>
-<body>
+<body class="auth-pending">
   <nav>
     <strong>Dataset Request Desk</strong>
     <a href="/client.html" class="active">My Requests</a>
@@ -32,57 +32,74 @@
   </section>
 
   <p id="message"></p>
-  <script src="/app.js"></script>
+  <script src="/app.js?v=4"></script>
   <script>
     API.requireAuth();
     let currentUser = null;
+    const PAGE_SIZE = 10;
+    let currentOffset = 0;
+    let tbody = null;
 
-    async function loadRequests() {
-      const requests = await API.call('/requests');
-      const container = document.querySelector('#requests');
-      if (!requests.length) {
-        container.innerHTML = '<p class="muted">No requests yet.</p>';
-        return;
-      }
+    function buildTable() {
       const table = document.createElement('table');
       table.innerHTML = '<thead><tr><th>ID</th><th>Task</th><th>Progress</th><th>Deadline</th><th>Status</th><th>Actions</th></tr></thead>';
-      const tbody = document.createElement('tbody');
-      for (const req of requests) {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${req.id}</td>
-          <td>${escapeHtml(req.task_name)}</td>
-          <td>${progressBar(req.assigned_count || 0, req.episodes_requested)}</td>
-          <td>${req.deadline}</td>
-          <td>${statusBadge(req.status)}</td>
-          <td class="row-actions"></td>`;
-        const actions = tr.querySelector('.row-actions');
-        if (req.status === 'delivered') {
-          const accept = document.createElement('button');
-          accept.textContent = 'Accept';
-          accept.onclick = () => changeStatus(req.id, 'accepted');
-          const reject = document.createElement('button');
-          reject.textContent = 'Reject';
-          reject.className = 'danger';
-          reject.onclick = () => changeStatus(req.id, 'rejected');
-          actions.append(accept, reject);
-        }
-        const expand = document.createElement('span');
-        expand.className = 'expand-btn';
-        expand.textContent = 'Details';
-        expand.style.marginLeft = '0.5rem';
-        expand.onclick = () => toggleDetail(req.id, tr);
-        actions.append(expand);
-        tbody.append(tr);
-
-        const detailTr = document.createElement('tr');
-        detailTr.className = 'detail-row';
-        detailTr.id = `detail-${req.id}`;
-        detailTr.innerHTML = `<td colspan="6"><div id="detail-content-${req.id}">Loading…</div></td>`;
-        tbody.append(detailTr);
-      }
+      tbody = document.createElement('tbody');
       table.append(tbody);
-      container.replaceChildren(table);
+      return table;
+    }
+
+    function appendRow(req) {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${req.id}</td>
+        <td>${escapeHtml(req.task_name)}</td>
+        <td>${progressBar(req.assigned_count || 0, req.episodes_requested)}</td>
+        <td>${req.deadline}</td>
+        <td>${statusBadge(req.status)}</td>
+        <td class="row-actions"></td>`;
+      const actions = tr.querySelector('.row-actions');
+      if (req.status === 'delivered') {
+        const accept = document.createElement('button');
+        accept.textContent = 'Accept';
+        accept.onclick = () => changeStatus(req.id, 'accepted');
+        const reject = document.createElement('button');
+        reject.textContent = 'Reject';
+        reject.className = 'danger';
+        reject.onclick = () => changeStatus(req.id, 'rejected');
+        actions.append(accept, reject);
+      }
+      const expand = document.createElement('span');
+      expand.className = 'expand-btn';
+      expand.textContent = 'Details';
+      expand.style.marginLeft = '0.5rem';
+      expand.onclick = () => toggleDetail(req.id, tr).catch(showError);
+      actions.append(expand);
+      tbody.append(tr);
+
+      const detailTr = document.createElement('tr');
+      detailTr.className = 'detail-row';
+      detailTr.id = `detail-${req.id}`;
+      detailTr.innerHTML = `<td colspan="6"><div id="detail-content-${req.id}">Loading…</div></td>`;
+      tbody.append(detailTr);
+    }
+
+    async function loadRequests(reset = false) {
+      if (reset) {
+        currentOffset = 0;
+        const container = document.querySelector('#requests');
+        container.replaceChildren(buildTable());
+        createLoadMoreButton(container, () => loadRequests());
+      }
+      const requests = await API.call(`/requests?limit=${PAGE_SIZE}&offset=${currentOffset}`);
+      if (!requests.length && currentOffset === 0) {
+        document.querySelector('#requests').innerHTML = '<p class="muted">No requests yet.</p>';
+        return;
+      }
+      for (const req of requests) appendRow(req);
+      currentOffset += requests.length;
+      const loadMoreBtn = document.querySelector('#requests [data-pagination]');
+      if (requests.length < PAGE_SIZE && loadMoreBtn) loadMoreBtn.remove();
+      return requests.length === PAGE_SIZE;
     }
 
     async function toggleDetail(id, row) {
@@ -108,7 +125,7 @@
       try {
         await API.call(`/requests/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) });
         showMessage(`Request moved to ${status}.`, 'success');
-        await loadRequests();
+        await loadRequests(true);
       } catch (err) {
         showMessage(err.message, 'error');
       }
@@ -124,17 +141,18 @@
         await API.call('/requests', { method: 'POST', body: JSON.stringify(data) });
         form.reset();
         showMessage('Request created.', 'success');
-        await loadRequests();
+        await loadRequests(true);
       } catch (err) {
         showMessage(err.message, 'error');
       }
     });
 
-    API.me().then(user => {
+    API.requireRole('client').then(user => {
+      if (!user) return;
       currentUser = user;
       document.querySelector('#who').textContent = `${user.name} (${user.role})`;
-      loadRequests();
-    }).catch(() => API.logout());
+      loadRequests(true).catch(showError);
+    });
   </script>
 </body>
 </html>

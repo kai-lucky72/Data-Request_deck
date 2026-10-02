@@ -4,14 +4,15 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Episodes — Dataset Request Desk</title>
-  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/styles.css?v=3">
 </head>
-<body>
+<body class="auth-pending">
   <nav>
-    <strong>Dataset Request Desk</strong>
-    <a href="/operator.html">Requests</a>
-    <a href="/operator-episodes.html" class="active">Episodes</a>
-    <a href="/operator-analytics.html">Analytics</a>
+    <strong data-brand>Operations</strong>
+    <a data-workspace-link="requests" href="/operator.html">Requests</a>
+    <a data-workspace-link="episodes" href="/operator-episodes.html" class="active">Episodes</a>
+    <a data-workspace-link="analytics" href="/operator-analytics.html">Analytics</a>
+    <a data-admin-link href="/admin.html" hidden>Users</a>
     <span class="spacer"></span>
     <span id="who"></span>
     <button class="secondary" onclick="API.logout()">Log out</button>
@@ -43,9 +44,53 @@
   </section>
 
   <p id="message"></p>
-  <script src="/app.js"></script>
+  <script src="/app.js?v=4"></script>
   <script>
     API.requireAuth();
+    const PAGE_SIZE = 20;
+    let currentOffset = 0;
+    let currentParams = '';
+    let tbody = null;
+
+    function buildTable() {
+      const table = document.createElement('table');
+      table.innerHTML = '<thead><tr><th>Episode ID</th><th>Task</th><th>Quality</th><th>Robot</th><th>Duration</th><th>Recorded</th><th>Status</th></tr></thead>';
+      tbody = document.createElement('tbody');
+      table.append(tbody);
+      return table;
+    }
+
+    function appendRow(ep) {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${escapeHtml(ep.episode_id)}</td>
+        <td>${escapeHtml(ep.task_name)}</td>
+        <td>${ep.quality}</td>
+        <td>${escapeHtml(ep.robot_id)}</td>
+        <td>${ep.duration_seconds}s</td>
+        <td>${new Date(ep.recorded_at).toLocaleDateString()}</td>
+        <td>${ep.assigned ? 'Assigned' : 'Available'}</td>`;
+      tbody.append(tr);
+    }
+
+    async function searchEpisodes(reset = false) {
+      if (reset) {
+        currentOffset = 0;
+        const container = document.querySelector('#results');
+        container.replaceChildren(buildTable());
+        createLoadMoreButton(container, () => searchEpisodes());
+      }
+      const episodes = await API.call(`/episodes?${currentParams}&limit=${PAGE_SIZE}&offset=${currentOffset}`);
+      if (!episodes.length && currentOffset === 0) {
+        document.querySelector('#results').innerHTML = '<p class="muted">No episodes found.</p>';
+        return;
+      }
+      for (const ep of episodes) appendRow(ep);
+      currentOffset += episodes.length;
+      const loadMoreBtn = document.querySelector('#results [data-pagination]');
+      if (episodes.length < PAGE_SIZE && loadMoreBtn) loadMoreBtn.remove();
+      return episodes.length === PAGE_SIZE;
+    }
 
     document.querySelector('#import-btn').onclick = async () => {
       const fileInput = document.querySelector('#csv-file');
@@ -56,15 +101,13 @@
         const result = await API.call('/episodes/import', { method: 'POST', body: formData });
         showMessage(`Imported ${result.imported}, skipped ${result.skipped}.`, 'success');
         fileInput.value = '';
-        if (result.issues.length) {
-          console.table(result.issues);
-        }
+        if (result.issues.length) console.table(result.issues);
       } catch (err) {
         showMessage(err.message, 'error');
       }
     };
 
-    document.querySelector('#search-btn').onclick = async () => {
+    document.querySelector('#search-btn').onclick = () => {
       const params = new URLSearchParams();
       const task = document.querySelector('#task-filter').value.trim();
       const quality = document.querySelector('#quality-filter').value;
@@ -72,38 +115,15 @@
       if (task) params.set('task_name', task);
       if (quality) params.set('quality', quality);
       if (availableOnly) params.set('available_only', 'true');
-      try {
-        const episodes = await API.call(`/episodes?${params}`);
-        const container = document.querySelector('#results');
-        if (!episodes.length) {
-          container.innerHTML = '<p class="muted">No episodes found.</p>';
-          return;
-        }
-        const table = document.createElement('table');
-        table.innerHTML = '<thead><tr><th>Episode ID</th><th>Task</th><th>Quality</th><th>Robot</th><th>Duration</th><th>Recorded</th><th>Status</th></tr></thead>';
-        const tbody = document.createElement('tbody');
-        for (const ep of episodes) {
-          const tr = document.createElement('tr');
-          tr.innerHTML = `
-            <td>${escapeHtml(ep.episode_id)}</td>
-            <td>${escapeHtml(ep.task_name)}</td>
-            <td>${ep.quality}</td>
-            <td>${escapeHtml(ep.robot_id)}</td>
-            <td>${ep.duration_seconds}s</td>
-            <td>${new Date(ep.recorded_at).toLocaleDateString()}</td>
-            <td>${ep.assigned ? 'Assigned' : 'Available'}</td>`;
-          tbody.append(tr);
-        }
-        table.append(tbody);
-        container.replaceChildren(table);
-      } catch (err) {
-        showMessage(err.message, 'error');
-      }
+      currentParams = params.toString();
+      searchEpisodes(true).catch(showError);
     };
 
-    API.me().then(user => {
+    API.requireWorkspaceRole().then(user => {
+      if (!user) return;
       document.querySelector('#who').textContent = `${user.name} (${user.role})`;
-    }).catch(() => API.logout());
+      searchEpisodes(true).catch(showError);
+    });
   </script>
 </body>
 </html>

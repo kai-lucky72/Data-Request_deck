@@ -19,36 +19,34 @@ router = APIRouter(prefix="/analytics", tags=["Analytics"])
 # GET reads data and does not mutate rows; operators/admins only may request it.
 @router.get("")
 def get_analytics(
-    db: Annotated[Session, Depends(get_db)],  # Inject one database session for all grouped queries.
-    _user: Annotated[User, Depends(require_roles(UserRole.operator, UserRole.admin))],  # Enforce role access before querying.
-    start_date: date = Query(...),  # Required URL parameter, parsed as a calendar date.
-    end_date: date = Query(...),  # Required and inclusive; reversed ranges return HTTP 400.
+    db: Annotated[Session, Depends(get_db)],
+    _user: Annotated[User, Depends(require_roles(UserRole.operator, UserRole.admin))],
+    start_date: date = Query(...),
+    end_date: date = Query(...),
+    robot_id: str | None = Query(default=None),
+    limit: int = Query(default=20, ge=1, le=100),
+    offset: int = Query(default=0, ge=0),
 ):
-    """Return grouped counts and median delivery time for an inclusive date range.
-
-    Aggregation and grouping run in SQL so the API does not load millions of rows
-    into Python. Indexes on recorded_at, status, and history request_id help these
-    queries; at very large scale, time partitioning and pre-aggregated daily tables
-    would keep dashboard reads fast.
-    """
+    """Return grouped counts and median delivery time for an inclusive date range."""
     if end_date < start_date:
         raise HTTPException(status_code=400, detail="end_date must be on or after start_date")
-    
-    # Convert the inclusive calendar dates to a half-open timestamp range:
-    # start <= recorded_at < midnight after end_date. This includes all of end_date.
+
     start = datetime.combine(start_date, time.min, tzinfo=timezone.utc)
     end = datetime.combine(end_date + timedelta(days=1), time.min, tzinfo=timezone.utc)
 
-    # SQLite's CAST(... AS DATE) has different return behavior from PostgreSQL;
-    # date() gives the same YYYY-MM-DD grouping key on both supported engines.
     day_expression = func.date(Episode.recorded_at)
-    per_day_robot = db.query(
+    per_day_query = db.query(
         day_expression.label("day"),
         Episode.robot_id,
         func.count(Episode.id).label("count"),
-    ).filter(Episode.recorded_at >= start, Episode.recorded_at < end).group_by(
+    ).filter(Episode.recorded_at >= start, Episode.recorded_at < end)
+    if robot_id:
+        per_day_query = per_day_query.filter(Episode.robot_id == robot_id)
+    grouped_per_day_query = per_day_query.group_by(
         day_expression, Episode.robot_id
-    ).order_by(day_expression, Episode.robot_id).all()
+    ).order_by(day_expression, Episode.robot_id)
+    total_episode_groups = db.query(func.count()).select_from(grouped_per_day_query.subquery()).scalar() or 0
+    per_day_robot = grouped_per_day_query.limit(limit).offset(offset).all()
 
     # Group request rows in the database; the range refers to when each request began.
     status_counts = db.query(Request.status, func.count(Request.id)).filter(
@@ -112,6 +110,7 @@ def get_analytics(
             {"date": row.day.isoformat() if hasattr(row.day, "isoformat") else str(row.day),
              "robot_id": row.robot_id, "count": row.count} for row in per_day_robot
         ],
+        "total_episode_day_robot_groups": total_episode_groups,
         "requests_by_status": {status.value: count for status, count in status_counts},
         "median_submitted_to_delivered_seconds": float(median_delivery_seconds) if median_delivery_seconds is not None else None,
         "top_5_good_episode_tasks": [{"task_name": task, "count": count} for task, count in top_tasks],

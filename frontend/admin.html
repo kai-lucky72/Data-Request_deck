@@ -4,19 +4,30 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Admin — Dataset Request Desk</title>
-  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/styles.css?v=3">
 </head>
-<body>
+<body class="auth-pending">
   <nav>
     <strong>Dataset Request Desk</strong>
     <a href="/admin.html" class="active">Users</a>
-    <a href="/operator.html">Requests</a>
-    <a href="/operator-episodes.html">Episodes</a>
-    <a href="/operator-analytics.html">Analytics</a>
+    <a href="/admin/requests.html">Requests</a>
+    <a href="/admin/episodes.html">Episodes</a>
+    <a href="/admin/analytics.html">Analytics</a>
     <span class="spacer"></span>
     <span id="who"></span>
     <button class="secondary" onclick="API.logout()">Log out</button>
   </nav>
+
+  <section>
+    <p class="eyebrow">ADMINISTRATION</p>
+    <h1>Admin workspace</h1>
+    <p class="muted">Manage accounts and open the operational tools from your admin workspace.</p>
+    <div class="workspace-cards">
+      <a class="workspace-card" href="/admin/requests.html"><span>01</span><strong>Request queue</strong><small>Review requests and manage fulfillment</small></a>
+      <a class="workspace-card" href="/admin/episodes.html"><span>02</span><strong>Episode catalog</strong><small>Import and search recorded episodes</small></a>
+      <a class="workspace-card" href="/admin/analytics.html"><span>03</span><strong>Analytics</strong><small>View delivery and recording metrics</small></a>
+    </div>
+  </section>
 
   <section>
     <h2>Create user</h2>
@@ -40,7 +51,7 @@
   </section>
 
   <p id="message"></p>
-  <script src="/app.js"></script>
+  <script src="/app.js?v=4"></script>
   <script>
     API.requireAuth();
 
@@ -118,15 +129,11 @@
       }
     });
 
-    API.me().then(user => {
-      if (user.role !== 'admin') {
-        showMessage('Admin access required.', 'error');
-        setTimeout(() => API.logout(), 1500);
-        return;
-      }
+    API.requireRole('admin').then(user => {
+      if (!user) return;
       document.querySelector('#who').textContent = `${user.name} (${user.role})`;
       loadUsers();
-    }).catch(() => API.logout());
+    });
   </script>
 </body>
 </html>
