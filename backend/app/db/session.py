@@ -1,5 +1,6 @@
+from collections.abc import Generator  # Import the Generator type for type hinting the database session generator function.
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker,Session
 
 from app.core.config import settings
 
