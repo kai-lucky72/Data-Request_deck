@@ -30,11 +30,11 @@ def create_access_token(data:dict, expires_delta:Optional[timedelta]=None) -> st
     encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM) # Encode the data and return the token.
     return encoded_jwt
 
-def decode_access_token(token:str) -> dict:
+def decode_access_token(token:str) -> dict | None:
     """Decode a JWT access token and return the data."""
     try:
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM]) # Decode the token and return the payload.
         return payload
     except JWTError:
-        raise None # return none to indicate invalid token or expired token.
+        return None # return none to indicate invalid token or expired token.
         

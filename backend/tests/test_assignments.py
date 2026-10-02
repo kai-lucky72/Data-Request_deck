@@ -10,7 +10,7 @@ from app.models.episode import Episode, Quality
 from app.models.request import Request, RequestStatus
 from app.models.user import User, UserRole
 from app.services.assignments import assign_episode_to_request
-from conftest import make_users_and_request
+from tests.conftest import make_users_and_request
 
 
 def test_episode_cannot_be_assigned_twice(db):

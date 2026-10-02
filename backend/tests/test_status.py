@@ -4,8 +4,9 @@ import pytest
 from fastapi import HTTPException
 
 from app.models.request import RequestStatus
-from app.models.user import User
+from app.models.user import User, UserRole
 from app.services.status import change_request_status
+from tests.conftest import make_users_and_request
 
 
 def test_operator_cannot_deliver_before_requested_episode_count(db):
