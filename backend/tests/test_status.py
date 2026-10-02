@@ -6,7 +6,6 @@ from fastapi import HTTPException
 from app.models.request import RequestStatus
 from app.models.user import User
 from app.services.status import change_request_status
-from conftest import make_users_and_request
 
 
 def test_operator_cannot_deliver_before_requested_episode_count(db):
