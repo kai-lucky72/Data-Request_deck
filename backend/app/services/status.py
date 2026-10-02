@@ -7,8 +7,7 @@ from app.models.request import Request,RequestStatus,RequestStatusHistory
 # A directed workflow map: current state -> proposed next state -> allowed roles.
 # For example, only an operator/admin can move submitted to in_progress.
 ALLOWED_TRANSITIONS={
-    """Map of allowed state transitions by role"""
-    RequestStatus.submitted:{
+        RequestStatus.submitted:{
         RequestStatus.in_progress:{UserRole.operator,UserRole.admin},
     },
     RequestStatus.in_progress:{
