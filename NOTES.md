@@ -22,13 +22,16 @@ For live updates I chose **Server-Sent Events (SSE), not WebSockets**. The requi
 
 ## 2. Simplifications and next work
 
-The UI is compact: episode assignment uses a request ID and filtered list, capped at 200 results. The request UI loads a bounded list rather than providing full pagination. CSV imports run synchronously and return row-level skip reasons. There are no export jobs or email notifications.
+The UI is compact: episode assignment uses a request ID and filtered list, capped at 200 results. The request UI loads a bounded list rather than providing full pagination. CSV imports run synchronously and return row-level skip reasons. There are no export jobs or email notifications. Public signup is outside the current brief, which requires login; accounts are seeded or created by an admin.
 
 With two more days, I would:
 
 - Add an assignment picker with request progress, plus server-side episode pagination.
 - Run large CSV imports as background jobs with progress and an error report.
 - Audit admin account and role changes.
+- Polish the visual design and responsive behavior, and make the client request and delivery-response workflows smoother.
+- Add **client-only signup**, email verification, and password recovery. Operator and admin accounts would remain admin-created so public registration cannot grant staff permissions.
+- Add lifecycle email notifications for new requests, status changes, and delivered work.
 
 ## 3. What went wrong
 
