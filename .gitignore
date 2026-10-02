@@ -14,8 +14,6 @@ __pycache__/
 htmlcov/
 
 # Local environment secrets and machine-specific settings.
-.env
-.env.*
 !.env.example
 
 # Local SQLite databases and generated load-test data.
@@ -25,7 +23,8 @@ htmlcov/
 seed/episodes_large.csv
 
 # Common editor and operating-system files.
-.vscode/
 .idea/
 .DS_Store
 Thumbs.db
+config.bat
+node_modules
