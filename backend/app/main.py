@@ -10,7 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
 from app.api import auth
-from app.api import requests, episodes, users, analytics
+from app.api import requests, episodes, analytics
 
 logger = logging.getLogger("dataset_desk.requests")
 logging.basicConfig(level=logging.INFO)  # Ensure access records are visible in Docker logs.
@@ -36,7 +36,6 @@ app.include_router(auth.router) #adding the auth router
 app.include_router(requests.router) #adding the requests router
 app.include_router(episodes.router) #adding the episodes router
 app.include_router(analytics.router) #adding the analytics router
-app.include_router(users.router) #adding the users router
 
 
 # setting up the home route of the app
