@@ -46,6 +46,7 @@ class Request(Base):
         default=lambda: datetime.now(timezone.utc), #Automatically set the value to the current UTC time when a new row is created.
         nullable=False
     )
+
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc),  # Set current UTC time when inserted.
@@ -89,12 +90,11 @@ class RequestStatusHistory(Base):
     
     # Foreign key to the user who changed the status.
     changed_by_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=True)
-    created_at: Mapped[datetime] = mapped_column(
+    changed_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
-        default=lambda: datetime.now(timezone.utc), #Automatically set the value to the current UTC time when a new row is created.
+        default=lambda: datetime.now(timezone.utc),
         nullable=False
     )
-
     note: Mapped[Optional[str]] = mapped_column(Text, nullable=True)  # Optional comment explaining why the status changed.
 
 
