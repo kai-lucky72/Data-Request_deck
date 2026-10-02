@@ -55,25 +55,22 @@ async def upload_episode_csv(
 @router.get("", response_model=list[EpisodeResponse])
 def list_episodes(
     db: Annotated[Session, Depends(get_db)],
-    _user: Annotated[User, Depends(require_roles(*OPERATOR_ROLES))], # Only operators and admins can list episodes
+    _user: Annotated[User, Depends(require_roles(*OPERATOR_ROLES))],
     task_name: str | None = Query(default=None),
     quality: Quality | None = Query(default=None),
     available_only: bool = Query(default=True),
+    limit: int = Query(default=50, ge=1, le=200),
+    offset: int = Query(default=0, ge=0),
 ):
     """Search the episode catalog with optional task and quality filters."""
-    query = db.query(Episode)  # Build a SQL query; rows are fetched only after filters apply.
+    query = db.query(Episode)
     if task_name:
-        # ilike is a case-insensitive substring match in PostgreSQL and SQLite.
         query = query.filter(Episode.task_name.ilike(f"%{task_name.strip()}%"))
     if quality:
-        # Enum query values are validated by FastAPI before this function executes.
         query = query.filter(Episode.quality == quality)
     if available_only:
-        # `has()` becomes a NOT EXISTS query, avoiding an in-Python full-table filter.
         query = query.filter(~Episode.assignment.has())
-    # Limit results to keep the first version of the browser UI responsive.
-    episodes = query.order_by(Episode.recorded_at.desc()).limit(200).all()
-    # Return a simple boolean alongside the episode to make the UI easier to build.
+    episodes = query.order_by(Episode.recorded_at.desc()).limit(limit).offset(offset).all()
     return [EpisodeResponse.model_validate(ep).model_copy(update={"assigned": ep.assignment is not None}) for ep in episodes]
 
 

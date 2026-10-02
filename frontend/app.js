@@ -51,3 +51,28 @@ function escapeHtml(str) {
   div.textContent = str ?? '';
   return div.innerHTML;
 }
+
+function createLoadMoreButton(container, fetchNextPage) {
+  const btn = document.createElement('button');
+  btn.textContent = 'Load more';
+  btn.className = 'secondary';
+  btn.onclick = async () => {
+    btn.disabled = true;
+    btn.textContent = 'Loading…';
+    try {
+      const more = await fetchNextPage();
+      if (more) {
+        btn.disabled = false;
+        btn.textContent = 'Load more';
+      } else {
+        btn.remove();
+      }
+    } catch (err) {
+      showMessage(err.message, 'error');
+      btn.disabled = false;
+      btn.textContent = 'Load more';
+    }
+  };
+  container.append(btn);
+  return btn;
+}

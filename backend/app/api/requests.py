@@ -73,12 +73,14 @@ def create_request(
 def list_requests(
     db: Annotated[Session, Depends(get_db)],
     current_user: Annotated[User, Depends(get_current_user)],
+    limit: int = Query(default=20, ge=1, le=100),
+    offset: int = Query(default=0, ge=0),
 ):
     """Clients see their own records; operations roles see the full work queue."""
     query = db.query(Request)
     if current_user.role == UserRole.client:
         query = query.filter(Request.client_id == current_user.id)
-    requests = query.order_by(Request.created_at.desc()).all()
+    requests = query.order_by(Request.created_at.desc()).limit(limit).offset(offset).all()
     return [_to_response(db, r) for r in requests]
     
 @router.get("/{request_id}", response_model=RequestResponse)
