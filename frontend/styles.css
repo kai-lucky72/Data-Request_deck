@@ -1,0 +1,37 @@
+:root {
+  font: 15px system-ui, sans-serif;
+  color: #182230;
+  background: #f4f6f8;
+}
+* { box-sizing: border-box; }
+body { max-width: 1100px; margin: 2rem auto; padding: 0 1rem; }
+h1, h2, h3 { margin: .4rem 0; }
+section { background: white; padding: 1rem; margin: 1rem 0; border: 1px solid #dce2e8; border-radius: 8px; }
+input, select, textarea, button { font: inherit; padding: .5rem; margin: .2rem; border: 1px solid #c5cdd6; border-radius: 4px; }
+button { background: #164e8a; color: white; border: 0; cursor: pointer; }
+button.secondary { background: #526273; }
+button.danger { background: #b3372f; }
+button:disabled { background: #9aa5b1; cursor: not-allowed; }
+table { border-collapse: collapse; width: 100%; margin-top: .6rem; }
+th, td { text-align: left; padding: .5rem; border-bottom: 1px solid #e2e7ec; vertical-align: top; }
+th { background: #f0f3f6; }
+.muted { color: #64748b; }
+#message { min-height: 1.4em; padding: .4rem; border-radius: 4px; }
+#message.error { background: #fdecea; color: #b3372f; }
+#message.success { background: #e8f5e9; color: #2e7d32; }
+.badge { display: inline-block; padding: .15rem .5rem; border-radius: 12px; font-size: .8rem; font-weight: 600; }
+.badge.submitted { background: #e3f2fd; color: #1565c0; }
+.badge.in_progress { background: #fff3e0; color: #e65100; }
+.badge.delivered { background: #f3e5f5; color: #7b1fa2; }
+.badge.accepted { background: #e8f5e9; color: #2e7d32; }
+.badge.rejected { background: #fdecea; color: #b3372f; }
+.progress-bar { height: 6px; background: #e2e7ec; border-radius: 3px; margin-top: .3rem; }
+.progress-bar > div { height: 100%; background: #164e8a; border-radius: 3px; }
+.row-actions button { margin-right: .3rem; }
+.expand-btn { cursor: pointer; color: #164e8a; font-size: .85rem; }
+.detail-row { display: none; background: #f8fafc; }
+.detail-row.open { display: table-row; }
+nav { display: flex; gap: .5rem; align-items: center; margin-bottom: 1rem; }
+nav a { color: #164e8a; text-decoration: none; padding: .3rem .6rem; border-radius: 4px; }
+nav a.active { background: #164e8a; color: white; }
+nav .spacer { flex: 1; }

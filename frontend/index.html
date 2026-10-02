@@ -1,151 +1,55 @@
 <!doctype html>
-<!-- A deliberately small single-page UI: no build tools are needed to run it. -->
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Dataset Request Desk</title>
-  <style>
-    /* Keep the interface readable and functional without a frontend framework. */
-    :root { font: 16px system-ui, sans-serif; color: #182230; background: #f4f6f8; }
-    body { max-width: 980px; margin: 2rem auto; padding: 0 1rem; }
-    h1, h2 { margin-bottom: .5rem; } section { background: white; padding: 1rem; margin: 1rem 0; border: 1px solid #dce2e8; border-radius: 8px; }
-    input, select, textarea, button { font: inherit; padding: .55rem; margin: .25rem; }
-    button { cursor: pointer; background: #164e8a; color: white; border: 0; border-radius: 4px; }
-    button.secondary { background: #526273; } table { border-collapse: collapse; width: 100%; margin-top: .8rem; }
-    th, td { text-align: left; padding: .55rem; border-bottom: 1px solid #e2e7ec; }
-    .muted { color: #64748b; } #message { min-height: 1.4em; }
-    [hidden] { display: none !important; }
-  </style>
+  <title>Dataset Request Desk — Sign in</title>
+  <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
   <h1>Dataset Request Desk</h1>
-  <p class="muted">A lightweight interface for clients and operations staff.</p>
-  <section id="login-panel">
+  <p class="muted">Sign in to manage dataset requests.</p>
+  <section style="max-width:400px">
     <h2>Sign in</h2>
     <form id="login-form">
-      <input name="username" type="email" placeholder="Email" required>
-      <input name="password" type="password" placeholder="Password" required>
-      <button>Login</button>
+      <input name="username" type="email" placeholder="Email" required style="width:100%">
+      <input name="password" type="password" placeholder="Password" required style="width:100%">
+      <button type="submit" style="width:100%">Login</button>
     </form>
   </section>
-  <section id="app-panel" hidden>
-    <p>Signed in as <strong id="who"></strong> <button class="secondary" id="logout">Log out</button></p>
-    <div id="client-tools" hidden>
-      <h2>New request</h2>
-      <form id="request-form">
-        <input name="task_name" placeholder="Task name" required>
-        <input name="episodes_requested" type="number" min="1" placeholder="Episodes" required>
-        <input name="deadline" type="date" required>
-        <input name="notes" placeholder="Notes (optional)">
-        <button>Create request</button>
-      </form>
-    </div>
-    <div id="operator-tools" hidden>
-      <h2>Find episodes</h2>
-      <input id="task-filter" placeholder="Filter task name">
-      <select id="quality-filter"><option value="">Any quality</option><option>good</option><option>usable</option><option>bad</option></select>
-      <button id="search-episodes">Search</button>
-      <h3>Available episodes</h3><div id="episodes"></div>
-    </div>
-    <h2>Requests</h2>
-    <div id="requests"></div>
-  </section>
-  <p id="message" role="status" aria-live="polite"></p>
+  <p id="message"></p>
+  <script src="/app.js"></script>
   <script>
-    // Keep the token in memory for this page session; the API still validates every call.
-    let token = sessionStorage.getItem('token');
-    let currentUser = null;
-    const message = (text) => { document.querySelector('#message').textContent = text; };
-
-    // Shared fetch helper attaches the bearer token and turns API errors into readable messages.
-    async function api(path, options = {}) {
-      const headers = { ...(options.headers || {}) };
-      if (token) headers.Authorization = `Bearer ${token}`;
-      if (options.body && !(options.body instanceof FormData) && !(options.body instanceof URLSearchParams) && !headers['Content-Type']) headers['Content-Type'] = 'application/json';
-      const response = await fetch(path, { ...options, headers });
-      if (!response.ok) throw new Error((await response.json()).detail || `Request failed (${response.status})`);
-      return response.status === 204 ? null : response.json();
+    if (API.token) {
+      API.me().then(user => {
+        window.location.href = user.role === 'client' ? '/client.html' : user.role === 'admin' ? '/admin.html' : '/operator.html';
+      }).catch(() => {});
     }
 
-    // Login uses the OAuth2 form encoding expected by FastAPI's password flow.
-    document.querySelector('#login-form').addEventListener('submit', async (event) => {
-      event.preventDefault();
+    document.querySelector('#login-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const form = e.target;
+      const body = new URLSearchParams(new FormData(form));
       try {
-        const form = new URLSearchParams(new FormData(event.currentTarget));
-        const result = await api('/auth/login', { method: 'POST', body: form, headers: { 'Content-Type': 'application/x-www-form-urlencoded' } });
-        token = result.access_token; sessionStorage.setItem('token', token); await startApp(); message('Signed in.');
-      } catch (error) { message(error.message); }
-    });
-
-    // Load identity first so the page can show role-specific controls.
-    async function startApp() {
-      currentUser = await api('/auth/me');
-      document.querySelector('#login-panel').hidden = true;
-      document.querySelector('#app-panel').hidden = false;
-      document.querySelector('#who').textContent = `${currentUser.name} (${currentUser.role})`;
-      document.querySelector('#client-tools').hidden = currentUser.role !== 'client';
-      document.querySelector('#operator-tools').hidden = !['operator', 'admin'].includes(currentUser.role);
-      await loadRequests();
-    }
-
-    // Clients submit a small validated JSON payload; ownership comes from the token on the server.
-    document.querySelector('#request-form').addEventListener('submit', async (event) => {
-      event.preventDefault(); const data = Object.fromEntries(new FormData(event.currentTarget));
-      data.episodes_requested = Number(data.episodes_requested); data.notes ||= null;
-      try { await api('/requests', { method: 'POST', body: JSON.stringify(data) }); event.currentTarget.reset(); await loadRequests(); message('Request created.'); }
-      catch (error) { message(error.message); }
-    });
-
-    // Render each request with actions that are useful for the signed-in role.
-    async function loadRequests() {
-      const requests = await api('/requests');
-      const table = document.createElement('table');
-      table.innerHTML = '<thead><tr><th>ID</th><th>Task</th><th>Episodes</th><th>Deadline</th><th>Status</th><th>Actions</th></tr></thead>';
-      const body = document.createElement('tbody');
-      for (const request of requests) {
-        const row = document.createElement('tr');
-        row.innerHTML = `<td>${request.id}</td><td></td><td>${request.episodes_requested}</td><td>${request.deadline}</td><td>${request.status}</td><td></td>`;
-        row.children[1].textContent = request.task_name;
-        const actions = row.children[5];
-        // Buttons only help navigation; the backend remains the authority for permissions.
-        if (currentUser.role === 'client' && request.status === 'delivered') {
-          actions.append(makeButton('Accept', () => changeStatus(request.id, 'accepted')));
-          actions.append(makeButton('Reject', () => changeStatus(request.id, 'rejected')));
+        const res = await fetch('/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body
+        });
+        if (!res.ok) {
+          const data = await res.json();
+          showMessage(data.detail || 'Login failed', 'error');
+          return;
         }
-        if (['operator', 'admin'].includes(currentUser.role)) {
-          if (request.status === 'submitted' || request.status === 'rejected') actions.append(makeButton('Start / rework', () => changeStatus(request.id, 'in_progress')));
-          if (request.status === 'in_progress') actions.append(makeButton('Deliver', () => changeStatus(request.id, 'delivered')));
-          actions.append(makeButton('Assign episode', () => assignEpisode(request.id), true));
-        }
-        body.append(row);
+        const data = await res.json();
+        API.token = data.access_token;
+        sessionStorage.setItem('token', data.access_token);
+        const user = await API.me();
+        window.location.href = user.role === 'client' ? '/client.html' : user.role === 'admin' ? '/admin.html' : '/operator.html';
+      } catch (err) {
+        showMessage(err.message, 'error');
       }
-      table.append(body); const target = document.querySelector('#requests'); target.replaceChildren(table);
-    }
-    function makeButton(label, action, secondary = false) { const button = document.createElement('button'); button.textContent = label; if (secondary) button.className = 'secondary'; button.onclick = action; return button; }
-    async function changeStatus(id, status) { try { await api(`/requests/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) }); await loadRequests(); message(`Request moved to ${status}.`); } catch (error) { message(error.message); } }
-
-    // Search and render only available episodes, then attach a selected row to a request.
-    document.querySelector('#search-episodes').onclick = loadEpisodes;
-    async function loadEpisodes() {
-      try {
-        const params = new URLSearchParams(); const task = document.querySelector('#task-filter').value; const quality = document.querySelector('#quality-filter').value;
-        if (task) params.set('task_name', task); if (quality) params.set('quality', quality);
-        const rows = await api(`/episodes?${params}`); const target = document.querySelector('#episodes'); target.replaceChildren();
-        for (const episode of rows) {
-          const line = document.createElement('p');
-          line.textContent = `${episode.episode_id} · ${episode.task_name} · ${episode.quality} · ${episode.robot_id} `;
-          line.append(makeButton('Assign…', () => { const id = prompt('Request ID to assign this episode to:'); if (id) attachEpisode(Number(id), episode.id); }, true)); target.append(line);
-        }
-        message(`${rows.length} episodes found (maximum 200).`);
-      } catch (error) { message(error.message); }
-    }
-    async function assignEpisode(requestId) { const episodeId = prompt('Episode database ID to assign:'); if (episodeId) await attachEpisode(requestId, Number(episodeId)); }
-    async function attachEpisode(requestId, episodeId) { try { await api(`/episodes/requests/${requestId}/assignments`, { method: 'POST', body: JSON.stringify({ episode_id: episodeId }) }); message('Episode assigned.'); } catch (error) { message(error.message); } }
-
-    // Logout clears this tab's token; an expired token falls back to the login form.
-    document.querySelector('#logout').onclick = () => { token = null; currentUser = null; sessionStorage.removeItem('token'); document.querySelector('#app-panel').hidden = true; document.querySelector('#login-panel').hidden = false; };
-    if (token) startApp().catch(() => { token = null; sessionStorage.removeItem('token'); });
+    });
   </script>
 </body>
 </html>
