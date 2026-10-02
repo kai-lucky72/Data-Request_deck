@@ -1,9 +1,13 @@
 from pathlib import Path
+from dotenv import load_dotenv
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 # Repo-root .env so settings work from backend/, alembic, and the app.
 _ENV_FILE = Path(__file__).resolve().parents[3] / ".env"
+
+# Load .env file explicitly
+load_dotenv(_ENV_FILE)
 
 # define a class for the settings of the whole project
 class Settings(BaseSettings):
