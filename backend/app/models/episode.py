@@ -2,10 +2,10 @@ from datetime import datetime,timezone
 from typing import Optional
 
 from sqlalchemy import Integer,String,DateTime,Enum as SAEnum
-from sqlalchemy.orm import Mapped,mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 import enum
 
-from app.db.base import Base
+from ..db.base import Base
 
 class Quality(str,enum.Enum):
     """Defines the different quality levels that an episode can have."""
@@ -35,7 +35,7 @@ class Episode(Base):
     quality: Mapped[Quality] = mapped_column(SAEnum(Quality), nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
-        default=lambda: datetime.now(timezone.utc) #Automatically set the value to the current UTC time when a new row is created.
+        default=lambda: datetime.now(timezone.utc), #Automatically set the value to the current UTC time when a new row is created.
         nullable=False
     )
     

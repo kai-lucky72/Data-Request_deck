@@ -1,10 +1,15 @@
-from pyndatic_settings import BaseSettings, SettingsConfigDict
+from pathlib import Path
+
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+# Repo-root .env so settings work from backend/, alembic, and the app.
+_ENV_FILE = Path(__file__).resolve().parents[3] / ".env"
 
 # define a class for the settings of the whole project
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file = ".env",
-        env_file_file_encoding="utf-8",
+        env_file=_ENV_FILE,
+        env_file_encoding="utf-8",
         extra="ignore" # ignore extra environment variables that are not declared in this settings class
     )
 
@@ -15,4 +20,4 @@ class Settings(BaseSettings):
     APP_NAME:str = "Dataset Request Desk"
     DEBUG:bool = False # default value is False hich keeps the app in production-safe behavior by default.
 
-settings = Settings() instance to be used across the project
+settings = Settings()  # instance to be used across the project

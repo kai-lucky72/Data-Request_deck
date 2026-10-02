@@ -1,14 +1,15 @@
-from datetime import datetime,timezone
+from datetime import date, datetime, timezone
 from typing import Optional
 
-from sqlalchemy import Integer,String,DateTime,Enum as SAEnum
-from sqlalchemy.orm import Mapped,mapped_column,ForeignKey
+from sqlalchemy import Date, DateTime, Enum as SAEnum, ForeignKey, Integer, String, Text
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 import enum
 
-from app.db.base import Base
+from ..db.base import Base
 
 class RequestStatus(str,enum.Enum):
     """Defines the possible status values that a request can have in the system."""
+    submitted = "submitted"
     in_progress = "in_progress"
     delivered = "delivered"
     accepted = "accepted"
@@ -28,7 +29,7 @@ class Request(Base):
     # The client_id field establishes a foreign key relationship to the 'id' column of the 'user' table.
     # This links each request to a specific client user account, enforcing integrity at the database level.
     # By referencing user.id, it allows us to easily query which user (client) created this request and ensures requests cannot exist without a valid client.
-    client_id: Mapped[str] = mapped_column(ForeignKey("user.id"), nullable=False, index=True)
+    client_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False, index=True)
 
     task_name: Mapped[str] = mapped_column(String(255), nullable=False) 
     episodes_requested: Mapped[int] = mapped_column(Integer, nullable=False)
@@ -42,10 +43,10 @@ class Request(Base):
     )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
-        default=lambda: datetime.now(timezone.utc) #Automatically set the value to the current UTC time when a new row is created.
+        default=lambda: datetime.now(timezone.utc), #Automatically set the value to the current UTC time when a new row is created.
         nullable=False
     )
-     updated_at: Mapped[datetime] = mapped_column(
+    updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc),  # Set current UTC time when inserted.
         onupdate=lambda: datetime.now(timezone.utc),  # Automatically update the value whenever the row is changed.
@@ -61,12 +62,12 @@ class Request(Base):
     # With back_populates="request", it forms a bidirectional relationship: from a Request, you can access all its assignments (.assignments);
     # from an Assignment, you can access the associated Request (.request).
     # This means a single request can have multiple Assignment objects (for example, mapping multiple episodes that fulfill the request).
-    assignments = relationship("Assignment", back_populates="request"
+    assignments = relationship("Assignment", back_populates="request")
 
-        # This is an audit trail:
+    # This is an audit trail:
     # you can inspect all previous status changes for this request.
     # Example: `request.status_history` gives you the list of status change records.
-     status_history = relationship(  
+    status_history = relationship(  
         "RequestStatusHistory",  
         back_populates="request",
         order_by="RequestStatusHistory.changed_at"  # SQLAlchemy will return these history rows ordered by timestamp.
@@ -90,11 +91,11 @@ class RequestStatusHistory(Base):
     changed_by_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
-        default=lambda: datetime.now(timezone.utc) #Automatically set the value to the current UTC time when a new row is created.
+        default=lambda: datetime.now(timezone.utc), #Automatically set the value to the current UTC time when a new row is created.
         nullable=False
     )
 
-    note: Mapped[Optional[Text]] = mapped_column(Text, nullable=True)  # Optional comment explaining why the status changed.
+    note: Mapped[Optional[str]] = mapped_column(Text, nullable=True)  # Optional comment explaining why the status changed.
 
 
     # - `changed_by`: links this history row to the User who performed the status change, via changed_by_id.

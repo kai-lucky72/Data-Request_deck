@@ -4,7 +4,7 @@ from datetime import datetime,timezone
 from sqlalchemy import ForeignKey, DateTime
 from sqlalchemy.orm import Mapped,mapped_column,relationship
 
-from app.db.base import Base
+from ..db.base import Base
 
 class Assignment(Base):
     """

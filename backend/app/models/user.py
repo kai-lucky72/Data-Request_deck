@@ -2,10 +2,10 @@ from datetime import datetime,timezone
 from typing import Optional
 
 from sqlalchemy import Integer, String, Boolean, Column, DateTime, Enum as SAEnum
-from sqlalchemy.orm import mapped_column, Mapped,Mapped
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 import enum
 
-from app.db.base import Base
+from ..db.base import Base
 
 class UserRole(str, enum.Enum):
     """Defines the different roles that a user can have in the system."""
@@ -17,8 +17,9 @@ class User(Base):
     """
     User model: maps user accounts to the database.
     This class defines columns for the user's unique ID, email address, and password hash.
-    Each attribute is mapped to a column in the 'user' table.
+    Each attribute is mapped to a column in the 'users' table.
     """
+    __tablename__ = "users"
     id: Mapped[int] = mapped_column(primary_key=True)  # Unique identifier for the user (Primary Key)
     email: Mapped[str] = mapped_column(String(255), unique=True, index=True, nullable=False)  # Email address (must be unique)
     password_hash: Mapped[str] = mapped_column(String(255), nullable=False)  # Hashed password
