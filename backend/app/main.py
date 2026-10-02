@@ -39,9 +39,10 @@ app.include_router(analytics.router) #adding the analytics router
 app.include_router(users.router) #adding the users router
 
 # setting up the home route of the app
-@app.get("/")
+@app.get("/", include_in_schema=False)
 def home():
-    return {"message":"Welcome Home to the dataset-request-deck"}
+    """Serve the no-build frontend from the same origin as the JSON API."""
+    return FileResponse("frontend/index.html")
 
 @app.middleware("http")
 async def log_request(request: Request, call_next):
