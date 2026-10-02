@@ -135,6 +135,10 @@ function useLiveUpdates(onUpdate, interestedEvents) {
     let retryResolve
     let refreshTimer
     const interested = new Set(eventKey.split(','))
+    const refresh = () => {
+      window.clearTimeout(refreshTimer)
+      refreshTimer = window.setTimeout(() => callback.current(), 180)
+    }
     const connect = async () => {
       let delay = 1000
       while (!stopped) {
@@ -148,6 +152,7 @@ function useLiveUpdates(onUpdate, interestedEvents) {
           if (response.status === 401 || response.status === 403) break
           if (!response.ok || !response.body) throw new Error(`Live updates unavailable (${response.status})`)
           delay = 1000
+          refresh()
           const reader = response.body.getReader()
           const decoder = new TextDecoder()
           let buffer = ''
@@ -163,10 +168,7 @@ function useLiveUpdates(onUpdate, interestedEvents) {
               if (!data) continue
               try {
                 const event = JSON.parse(data)
-                if (interested.has(event.type)) {
-                  window.clearTimeout(refreshTimer)
-                  refreshTimer = window.setTimeout(() => callback.current(), 180)
-                }
+                if (interested.has(event.type)) refresh()
               } catch { /* Ignore malformed frames and keep the connection alive. */ }
             }
           }
