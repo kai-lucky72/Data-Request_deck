@@ -1,0 +1,28 @@
+# Local Python environments and compiled bytecode.
+venv/
+.venv/
+__pycache__/
+*.py[cod]
+
+# Test and coverage output.
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+
+# Local environment secrets and machine-specific settings.
+.env
+.env.*
+!.env.example
+
+# Local SQLite databases and generated load-test data.
+*.db
+*.sqlite
+*.sqlite3
+seed/episodes_large.csv
+
+# Common editor and operating-system files.
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
