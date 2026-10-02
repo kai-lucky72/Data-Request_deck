@@ -12,7 +12,7 @@ from fastapi.staticfiles import StaticFiles
 
 from app.core.config import settings
 from app.api import auth
-from app.api import requests, episodes, analytics, users
+from app.api import requests, episodes, analytics, users, events
 
 logger = logging.getLogger("dataset_desk.requests")
 logging.basicConfig(level=logging.INFO)
@@ -37,6 +37,7 @@ app.include_router(requests.router)
 app.include_router(episodes.router)
 app.include_router(analytics.router)
 app.include_router(users.router)
+app.include_router(events.router)
 
 # Serve Vite's production build. Keep the lookup usable from both the Docker
 # working directory (/app) and a local repository checkout.

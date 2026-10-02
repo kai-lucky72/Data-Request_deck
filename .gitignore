@@ -3,6 +3,7 @@ venv/
 .venv/
 frontend/node_modules/
 frontend/dist/
+.playwright-cli/
 __pycache__/
 *.py[cod]
 

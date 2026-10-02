@@ -13,6 +13,7 @@ from app.models.request import Request, RequestStatus, RequestStatusHistory
 from app.models.assignment import Assignment
 from app.schemas.request import RequestCreate, RequestResponse, RequestUpdateStatus, StatusHistoryResponse
 from app.services.status import change_request_status
+from app.services.events import event_broker
 
 router = APIRouter(
     prefix="/requests",
@@ -67,6 +68,7 @@ def create_request(
     ))
     db.commit()
     db.refresh(request)
+    event_broker.publish("requests_changed")
     return _to_response(db, request)
 
 @router.get("", response_model=list[RequestResponse])
@@ -137,4 +139,5 @@ def update_request_status(
         user=current_user,
         note=payload.note,
     )
+    event_broker.publish("requests_changed")
     return _to_response(db, updated)

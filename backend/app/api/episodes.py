@@ -14,6 +14,7 @@ from app.models.user import User, UserRole
 from app.schemas.episode import AssignmentCreate, AssignmentResponse, EpisodeResponse, ImportReport
 from app.services.import_episodes import import_episodes
 from app.services.assignments import assign_episode_to_request
+from app.services.events import event_broker
 
 
 router = APIRouter(
@@ -44,7 +45,10 @@ async def upload_episode_csv(
             temporary_path = Path(temporary.name)
             temporary.write(await file.read())
         # Return the full report so the operator can repair rows listed in `issues`.
-        return import_episodes(db, temporary_path)
+        report = import_episodes(db, temporary_path)
+        if report.imported:
+            event_broker.publish("episodes_changed")
+        return report
     finally:
         await file.close()
         if temporary_path:
@@ -91,7 +95,10 @@ def assign_episode(
     if episode is None:
         raise HTTPException(status_code=404, detail="Episode not found")
     # The service verifies request state, episode quality, and duplicate assignment.
-    return assign_episode_to_request(db, request, episode, current_user)
+    assignment = assign_episode_to_request(db, request, episode, current_user)
+    event_broker.publish("requests_changed")
+    event_broker.publish("episodes_changed")
+    return assignment
 
 @router.get("/requests/{request_id}/assignments", response_model=list[EpisodeResponse])
 def list_request_episodes(
